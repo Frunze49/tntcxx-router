@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/CommonUnit.test.dir/test/CommonUnitTest.cpp.o -o CommonUnit.test  libev.a

@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/EncDecUnit.test.dir/test/EncDecTest.cpp.o -o EncDecUnit.test  libev.a

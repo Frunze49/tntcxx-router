@@ -1,0 +1,676 @@
+Start testing: Feb 24 15:26 MSK
+----------------------------------------------------------
+1/12 Testing: MempoolUnit.test
+1/12 Test: MempoolUnit.test
+Command: "/home/user/tntcxx/build/MempoolUnit.test"
+Directory: /home/user/tntcxx/build
+"MempoolUnit.test" start time: Feb 24 15:26 MSK
+Output:
+----------------------------------------------------------
+*** TEST test_default<8, 0> started... ***
+Block for size 8 is 8
+Slab for size 8 is 2048
+SLAB_ALIGN for size 8 is 8
+*** TEST test_default<8, 0>: done
+*** TEST test_default<64, 0> started... ***
+Block for size 64 is 64
+Slab for size 64 is 16384
+SLAB_ALIGN for size 64 is 64
+*** TEST test_default<64, 0>: done
+*** TEST test_default<14, 0> started... ***
+Block for size 14 is 14
+Slab for size 14 is 3584
+SLAB_ALIGN for size 14 is 8
+*** TEST test_default<14, 0>: done
+*** TEST test_default<72, 0> started... ***
+Block for size 72 is 72
+Slab for size 72 is 18432
+SLAB_ALIGN for size 72 is 8
+*** TEST test_default<72, 0>: done
+*** TEST test_default<80, 0> started... ***
+Block for size 80 is 80
+Slab for size 80 is 20480
+SLAB_ALIGN for size 80 is 16
+*** TEST test_default<80, 0>: done
+*** TEST test_instance<8, 256> started... ***
+*** TEST test_instance<8, 256>: done
+*** TEST test_instance<14, 64> started... ***
+*** TEST test_instance<14, 64>: done
+*** TEST test_instance<15, 64> started... ***
+*** TEST test_instance<15, 64>: done
+*** TEST test_instance<63, 32> started... ***
+*** TEST test_instance<63, 32>: done
+*** TEST test_instance<64, 32> started... ***
+*** TEST test_instance<64, 32>: done
+*** TEST test_instance<65, 32> started... ***
+*** TEST test_instance<65, 32>: done
+*** TEST test_instance<80, 8> started... ***
+*** TEST test_instance<80, 8>: done
+*** TEST test_holder<16, 256> started... ***
+*** TEST test_holder<16, 256>: done
+*** TEST test_static<16, 256> started... ***
+*** TEST test_static<16, 256>: done
+*** TEST test_alignment<8, 2> started... ***
+*** TEST test_alignment<8, 2>: done
+*** TEST test_alignment<8, 13> started... ***
+*** TEST test_alignment<8, 13>: done
+*** TEST test_alignment<8, 64> started... ***
+*** TEST test_alignment<8, 64>: done
+*** TEST test_alignment<13, 8> started... ***
+*** TEST test_alignment<13, 8>: done
+*** TEST test_alignment<13, 64> started... ***
+*** TEST test_alignment<13, 64>: done
+*** TEST test_alignment<120, 2> started... ***
+*** TEST test_alignment<120, 2>: done
+*** TEST test_alignment<120, 13> started... ***
+*** TEST test_alignment<120, 13>: done
+*** TEST test_alignment<120, 64> started... ***
+*** TEST test_alignment<120, 64>: done
+<end of output>
+Test time =   0.11 sec
+----------------------------------------------------------
+Test Passed.
+"MempoolUnit.test" end time: Feb 24 15:26 MSK
+"MempoolUnit.test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/12 Testing: CStrUnit.test
+2/12 Test: CStrUnit.test
+Command: "/home/user/tntcxx/build/CStrUnit.test"
+Directory: /home/user/tntcxx/build
+"CStrUnit.test" start time: Feb 24 15:26 MSK
+Output:
+----------------------------------------------------------
+*** TEST test_macro_str started... ***
+*** TEST test_macro_str: done
+*** TEST test_liter_str started... ***
+*** TEST test_liter_str: done
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"CStrUnit.test" end time: Feb 24 15:26 MSK
+"CStrUnit.test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/12 Testing: CommonUnit.test
+3/12 Test: CommonUnit.test
+Command: "/home/user/tntcxx/build/CommonUnit.test"
+Directory: /home/user/tntcxx/build
+"CommonUnit.test" start time: Feb 24 15:26 MSK
+Output:
+----------------------------------------------------------
+*** TEST test_tuple_utils started... ***
+*** TEST test_tuple_utils: done
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"CommonUnit.test" end time: Feb 24 15:26 MSK
+"CommonUnit.test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/12 Testing: TraitsUnit.test
+4/12 Test: TraitsUnit.test
+Command: "/home/user/tntcxx/build/TraitsUnit.test"
+Directory: /home/user/tntcxx/build
+"TraitsUnit.test" start time: Feb 24 15:26 MSK
+Output:
+----------------------------------------------------------
+*** TEST test_integer_traits started... ***
+*** TEST test_integer_traits: done
+*** TEST test_universal_access started... ***
+*** TEST test_universal_access: done
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"TraitsUnit.test" end time: Feb 24 15:26 MSK
+"TraitsUnit.test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/12 Testing: RefVectorUnit.test
+5/12 Test: RefVectorUnit.test
+Command: "/home/user/tntcxx/build/RefVectorUnit.test"
+Directory: /home/user/tntcxx/build
+"RefVectorUnit.test" start time: Feb 24 15:26 MSK
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"RefVectorUnit.test" end time: Feb 24 15:26 MSK
+"RefVectorUnit.test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+6/12 Testing: Base64Unit.test
+6/12 Test: Base64Unit.test
+Command: "/home/user/tntcxx/build/Base64Unit.test"
+Directory: /home/user/tntcxx/build
+"Base64Unit.test" start time: Feb 24 15:26 MSK
+Output:
+----------------------------------------------------------
+	const char *alphabets[2] = {
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+	};
+	const char *decmap =
+		"\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
+		"\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
+		"\377\377\377\377\377\377\377\377\377\377\377\076\377\076\377\077"
+		"\064\065\066\067\070\071\072\073\074\075\377\377\377\100\377\377"
+		"\377\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016"
+		"\017\020\021\022\023\024\025\026\027\030\031\377\377\377\377\077"
+		"\377\032\033\034\035\036\037\040\041\042\043\044\045\046\047\050"
+		"\051\052\053\054\055\056\057\060\061\062\063\377\377\377\377\377"
+		"\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
+		"\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
+		"\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
+		"\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
+		"\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
+		"\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
+		"\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
+		"\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377";
+<end of output>
+Test time =   0.39 sec
+----------------------------------------------------------
+Test Passed.
+"Base64Unit.test" end time: Feb 24 15:26 MSK
+"Base64Unit.test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+7/12 Testing: BufferUnit.test
+7/12 Test: BufferUnit.test
+Command: "/home/user/tntcxx/build/BufferUnit.test"
+Directory: /home/user/tntcxx/build
+"BufferUnit.test" start time: Feb 24 15:26 MSK
+Output:
+----------------------------------------------------------
+*** TEST buffer_basic<32> started... ***
+*** TEST buffer_basic<32>: done
+*** TEST buffer_basic<128> started... ***
+*** TEST buffer_basic<128>: done
+*** TEST buffer_add_read<32> started... ***
+*** TEST buffer_add_read<32>: done
+*** TEST buffer_add_read<128> started... ***
+*** TEST buffer_add_read<128>: done
+*** TEST buffer_iterator<32> started... ***
+*** TEST buffer_iterator<32>: done
+*** TEST buffer_iterator<128> started... ***
+*** TEST buffer_iterator<128>: done
+*** TEST buffer_insert<32> started... ***
+*** TEST buffer_insert<32>: done
+*** TEST buffer_insert<128> started... ***
+*** TEST buffer_insert<128>: done
+*** TEST buffer_release<32> started... ***
+bcnt=16|sz=7|0123456||sz=8|78901234||sz=8|56789012||sz=8|34567890||sz=8|12345678||sz=8|90123456||sz=8|78901234||sz=8|56789#01||sz=8|23456789||sz=8|01234567||sz=8|89012345||sz=8|67890123||sz=8|456789#0||sz=8|12345678||sz=8|90123456||sz=4|789#|
+bcnt=12|sz=7|0123456||sz=8|78901234||sz=8|56789012||sz=8|3456789#||sz=8|01234567||sz=8|89012345||sz=8|67890123||sz=8|45678901||sz=8|23456789||sz=8|#0123456||sz=8|78901234||sz=6|56789#|
+*** TEST buffer_release<32>: done
+*** TEST buffer_release<128> started... ***
+bcnt=2|sz=87|012345678901234567890123456789012345678901234567890123456789#01234567890123456789012345||sz=36|67890123456789#01234567890123456789#|
+bcnt=2|sz=87|012345678901234567890123456789#0123456789012345678901234567890123456789#012345678901234||sz=6|56789#|
+*** TEST buffer_release<128>: done
+*** TEST buffer_out<32> started... ***
+*** TEST buffer_out<32>: done
+*** TEST buffer_out<128> started... ***
+*** TEST buffer_out<128>: done
+*** TEST buffer_iterator_get<32> started... ***
+*** TEST buffer_iterator_get<32>: done
+*** TEST buffer_iterator_get<128> started... ***
+*** TEST buffer_iterator_get<128>: done
+*** TEST buffer_move<32> started... ***
+*** TEST buffer_move<32>: done
+*** TEST buffer_move<128> started... ***
+*** TEST buffer_move<128>: done
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"BufferUnit.test" end time: Feb 24 15:26 MSK
+"BufferUnit.test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+8/12 Testing: RingUnit.test
+8/12 Test: RingUnit.test
+Command: "/home/user/tntcxx/build/RingUnit.test"
+Directory: /home/user/tntcxx/build
+"RingUnit.test" start time: Feb 24 15:26 MSK
+Output:
+----------------------------------------------------------
+*** TEST simple started... ***
+*** TEST simple: done
+*** TEST test_split_join<3, 3, 0> started... ***
+*** TEST test_split_join<3, 3, 0>: done
+*** TEST test_split_join<1, 3, 0> started... ***
+*** TEST test_split_join<1, 3, 0>: done
+*** TEST test_split_join<3, 1, 0> started... ***
+*** TEST test_split_join<3, 1, 0>: done
+*** TEST test_split_join<1, 1, 0> started... ***
+*** TEST test_split_join<1, 1, 0>: done
+*** TEST test_split_join<3, 3, 1> started... ***
+*** TEST test_split_join<3, 3, 1>: done
+*** TEST test_split_join<1, 3, 1> started... ***
+*** TEST test_split_join<1, 3, 1>: done
+*** TEST test_split_join<3, 1, 1> started... ***
+*** TEST test_split_join<3, 1, 1>: done
+*** TEST test_split_join<1, 1, 1> started... ***
+*** TEST test_split_join<1, 1, 1>: done
+*** TEST test_swap<3, 3> started... ***
+*** TEST test_swap<3, 3>: done
+*** TEST test_swap<3, 1> started... ***
+*** TEST test_swap<3, 1>: done
+*** TEST test_swap<1, 3> started... ***
+*** TEST test_swap<1, 3>: done
+*** TEST test_swap<1, 1> started... ***
+*** TEST test_swap<1, 1>: done
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"RingUnit.test" end time: Feb 24 15:26 MSK
+"RingUnit.test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+9/12 Testing: ListUnit.test
+9/12 Test: ListUnit.test
+Command: "/home/user/tntcxx/build/ListUnit.test"
+Directory: /home/user/tntcxx/build
+"ListUnit.test" start time: Feb 24 15:26 MSK
+Output:
+----------------------------------------------------------
+Test test_simple started
+Test test_simple finished
+Test test_simple_tpl started
+Test test_simple_tpl finished
+Test test_iterations started
+Test test_iterations finished
+Test test_ctors started
+Test test_ctors finished
+Test test_ctors_more started
+Test test_ctors_more finished
+Success
+<end of output>
+Test time =   0.98 sec
+----------------------------------------------------------
+Test Passed.
+"ListUnit.test" end time: Feb 24 15:26 MSK
+"ListUnit.test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+10/12 Testing: RulesUnit.test
+10/12 Test: RulesUnit.test
+Command: "/home/user/tntcxx/build/RulesUnit.test"
+Directory: /home/user/tntcxx/build
+"RulesUnit.test" start time: Feb 24 15:26 MSK
+Output:
+----------------------------------------------------------
+*** TEST test_basic started... ***
+*** TEST test_basic: done
+*** TEST test_collect_info started... ***
+*** TEST test_collect_info: done
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"RulesUnit.test" end time: Feb 24 15:26 MSK
+"RulesUnit.test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+11/12 Testing: EncDecUnit.test
+11/12 Test: EncDecUnit.test
+Command: "/home/user/tntcxx/build/EncDecUnit.test"
+Directory: /home/user/tntcxx/build
+"EncDecUnit.test" start time: Feb 24 15:26 MSK
+Output:
+----------------------------------------------------------
+*** TEST test_under_ints started... ***
+*** TEST test_under_ints: done
+*** TEST test_type_visual started... ***
+MP_ARR MP_MAP MP_EXT
+MP_NIL MP_BOOL MP_INT MP_STR|MP_BIN MP_INT|MP_FLT
+(MP_NONE) (MP_NIL) (MP_INT, MP_FLT, MP_NIL)
+*** TEST test_type_visual: done
+*** TEST test_basic started... ***
+000ACCC8CD07D0CE001E8480CEEEk2800CEEEk2800CF00000004A817C800D0FFD09CD09CD1FC18CA3F800000CB40000000000000000B0CD0F3CE00018894CE00018895C2C3A3abcA4defgAA313233343536373839309095CB3FF0000000000000CA40000000A4testC0C2830AC30BA3val0C9301020382A4key31A4val31A4key32A4val328201A4val31A4key32A4val3293010203930405069207088201020304
+*** TEST test_basic: done
+*** TEST test_class_rules started... ***
+*** TEST test_class_rules: done
+*** TEST test_object_codec started... ***
+8400A3gen012A02929301CE00018894039304CE0001889706039382000101A13182000201A13282000301A133918400A3gen012A02929301CE00018894039304CE0001889706039382000101A13182000201A13282000301A133
+*** TEST test_object_codec: done
+*** TEST test_optional started... ***
+   *** TEST CASE number ***
+   *** TEST CASE containers with numbers ***
+   *** TEST CASE trivial object ***
+   *** TEST CASE objects ***
+   *** TEST CASE containers with objects ***
+*** TEST test_optional: done
+*** TEST test_raw started... ***
+   *** TEST CASE decode num ***
+   *** TEST CASE decode string ***
+   *** TEST CASE decode the whole array ***
+   *** TEST CASE decode the first element of array ***
+   *** TEST CASE decode the array key by key ***
+   *** TEST CASE decode the whole map ***
+   *** TEST CASE decode one value from map ***
+   *** TEST CASE decode the map key by key ***
+*** TEST test_raw: done
+*** TEST test_variant started... ***
+*** TEST test_variant: done
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"EncDecUnit.test" end time: Feb 24 15:26 MSK
+"EncDecUnit.test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+12/12 Testing: Client.test
+12/12 Test: Client.test
+Command: "/home/user/tntcxx/build/Client.test"
+Directory: /home/user/tntcxx/build
+"Client.test" start time: Feb 24 15:26 MSK
+Output:
+----------------------------------------------------------
+2025-02-24 15:26:34.206 [164546] main/105/test_cfg.lua box.cc:5987 F> can't initialize storage: tx_binary: failed to bind, called on fd -1: Address already in use
+*** TEST trivial started... ***
+   *** TEST CASE Nonexistent future ***
+   *** TEST CASE No established connection ***
+DEBUG: Waiting for the future 1 with timeout 1000
+DEBUG: Network engine wait for 1000 milliseconds
+ERROR: Send to dead stream
+ERROR: Connection got an error: Failed to send request: Success
+   *** TEST CASE Bad address ***
+ERROR: Network address resolve failed: Temporary failure in name resolution
+ERROR: Failed to connect to asdasd:3301
+   *** TEST CASE Unreachable address ***
+INFO : Socket closed: 5 (5)
+ERROR: Failed to connect: Operation now in progress
+ERROR: Failed to connect to 101.101.101:3301
+   *** TEST CASE Wrong port ***
+ERROR: Network address resolve failed: Servname not supported for ai_socktype
+ERROR: Failed to connect to 127.0.0.1:4294966630
+   *** TEST CASE Connect timeout ***
+INFO : Socket closed: 5 (5)
+ERROR: Failed to connect: Operation now in progress
+ERROR: Failed to connect to 8.8.8.8:3301
+*** TEST trivial: done
+*** TEST single_conn_ping started... ***
+INFO : Pending connected (5)
+DEBUG: Connected to 127.0.0.1, socket is 5
+DEBUG: Connection to 127.0.0.1:3301 has been established
+DEBUG: Waiting for the future 2 with timeout 1000
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Greetings are received, read bytes 128
+DEBUG: Version: 197377
+DEBUG: Salt: 415238957e0d18d803b434fbd94bbfb22e0ac1de9e8855cfa52ec47ecf3425bf
+DEBUG: Greetings are decoded
+DEBUG: Network engine wait for 999 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Header: sync=2, code=0, schema=86
+DEBUG: Flushed input buffer of the connection %p0x7ffeffcd2710
+DEBUG: Feature 2 is ready and decoded
+DEBUG: Waiting for the future 3 with timeout 1000
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Header: sync=3, code=0, schema=86
+DEBUG: Feature 3 is ready and decoded
+DEBUG: Waiting for the future 3 with timeout 1000
+DEBUG: Feature 3 is ready and decoded
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Header: sync=4, code=0, schema=86
+DEBUG: Header: sync=5, code=0, schema=86
+DEBUG: Header: sync=6, code=0, schema=86
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Header: sync=7, code=0, schema=86
+DEBUG: Header: sync=8, code=0, schema=86
+DEBUG: Header: sync=9, code=0, schema=86
+INFO : Socket closed: 5 (5)
+*** TEST single_conn_ping: done
+*** TEST auto_close started... ***
+   *** TEST CASE Without requests ***
+INFO : Pending connected (5)
+DEBUG: Connected to 127.0.0.1, socket is 5
+DEBUG: Connection to 127.0.0.1:3301 has been established
+INFO : Socket closed: 5 (5)
+   *** TEST CASE With requests ***
+INFO : Pending connected (5)
+DEBUG: Connected to 127.0.0.1, socket is 5
+DEBUG: Connection to 127.0.0.1:3301 has been established
+DEBUG: Waiting for the future 10 with timeout 1000
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Greetings are received, read bytes 128
+DEBUG: Version: 197377
+DEBUG: Salt: f02b10ea7f097b8a2cb1543aa8e541e027369de72a0469acd113f8174ef0d9bd
+DEBUG: Greetings are decoded
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Header: sync=10, code=0, schema=86
+DEBUG: Feature 10 is ready and decoded
+INFO : Socket closed: 5 (5)
+*** TEST auto_close: done
+*** TEST many_conn_ping started... ***
+INFO : Pending connected (5)
+DEBUG: Connected to 127.0.0.1, socket is 5
+DEBUG: Connection to 127.0.0.1:3301 has been established
+INFO : Pending connected (6)
+DEBUG: Connected to 127.0.0.1, socket is 6
+DEBUG: Connection to 127.0.0.1:3301 has been established
+INFO : Pending connected (7)
+DEBUG: Connected to 127.0.0.1, socket is 7
+DEBUG: Connection to 127.0.0.1:3301 has been established
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 7 socket is ready to read
+DEBUG: Greetings are received, read bytes 128
+DEBUG: Version: 197377
+DEBUG: Salt: c7a9e68fca533562345d62ab28e856d24b7747c6d68dd14eef347d78d1d26d29
+DEBUG: Greetings are decoded
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 7 socket is ready to read
+DEBUG: Registered poll event 1: 6 socket is ready to read
+DEBUG: Greetings are received, read bytes 161
+DEBUG: Version: 197377
+DEBUG: Salt: 3db8316aa7885a0269fc3e3bfbad7c93c3054fb02e48af0f7462151cff56371d
+DEBUG: Greetings are decoded
+DEBUG: Registered poll event 2: 5 socket is ready to read
+DEBUG: Greetings are received, read bytes 161
+DEBUG: Version: 197377
+DEBUG: Salt: 41cfe1d977ffd55ddb1207586adf140f391f5ed84679ca5da6b3015f4454f1fd
+DEBUG: Greetings are decoded
+DEBUG: Header: sync=11, code=0, schema=86
+INFO : Socket closed: 5 (5)
+INFO : Socket closed: 6 (6)
+INFO : Socket closed: 7 (7)
+*** TEST many_conn_ping: done
+*** TEST single_conn_error started... ***
+INFO : Pending connected (5)
+DEBUG: Connected to 127.0.0.1, socket is 5
+DEBUG: Connection to 127.0.0.1:3301 has been established
+DEBUG: Waiting for the future 14 with timeout 1000
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Greetings are received, read bytes 128
+DEBUG: Version: 197377
+DEBUG: Salt: 0b0dec4b292d89c61b00b9b3b06c476581d518e83a7db599b7bb4bb3b0778c60
+DEBUG: Greetings are decoded
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Header: sync=14, code=32804, schema=86
+DEBUG: Feature 14 is ready and decoded
+DEBUG: Waiting for the future 15 with timeout 1000
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Header: sync=15, code=32807, schema=86
+DEBUG: Feature 15 is ready and decoded
+DEBUG: Waiting for the future 16 with timeout 1000
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Header: sync=16, code=32791, schema=86
+DEBUG: Feature 16 is ready and decoded
+INFO : Socket closed: 5 (5)
+*** TEST single_conn_error: done
+*** TEST single_conn_replace started... ***
+INFO : Pending connected (5)
+DEBUG: Connected to 127.0.0.1, socket is 5
+DEBUG: Connection to 127.0.0.1:3301 has been established
+DEBUG: Waiting for the future 17 with timeout 1000
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Greetings are received, read bytes 128
+DEBUG: Version: 197377
+DEBUG: Salt: 43e04f68da7876173fa6171d37acd90d840b6dacd64dce523ac0150110f29e9b
+DEBUG: Greetings are decoded
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Header: sync=17, code=0, schema=86
+DEBUG: Header: sync=18, code=0, schema=86
+DEBUG: Feature 17 is ready and decoded
+Tuple: field1=666 field2=111 field3=1.01 field4.first= field4.second=0
+DEBUG: Waiting for the future 18 with timeout 1000
+DEBUG: Feature 18 is ready and decoded
+Tuple: field1=777 field2=asd field3=2.02 field4.first= field4.second=0
+INFO : Socket closed: 5 (5)
+*** TEST single_conn_replace: done
+*** TEST single_conn_insert started... ***
+INFO : Pending connected (5)
+DEBUG: Connected to 127.0.0.1, socket is 5
+DEBUG: Connection to 127.0.0.1:3301 has been established
+   *** TEST CASE Successful inserts ***
+DEBUG: Waiting for the future 19 with timeout 1000
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Greetings are received, read bytes 128
+DEBUG: Version: 197377
+DEBUG: Salt: df91ceba7da662a7342dca6b590a54ca5bfe318af9404efa0cf3f13ded6d4056
+DEBUG: Greetings are decoded
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Header: sync=19, code=0, schema=86
+DEBUG: Header: sync=20, code=0, schema=86
+DEBUG: Feature 19 is ready and decoded
+Tuple: field1=123 field2=insert field3=3.033 field4.first= field4.second=0
+DEBUG: Waiting for the future 20 with timeout 1000
+DEBUG: Feature 20 is ready and decoded
+   *** TEST CASE Duplicate key during insertion ***
+DEBUG: Waiting for the future 21 with timeout 1000
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Header: sync=21, code=32771, schema=86
+DEBUG: Feature 21 is ready and decoded
+RESPONSE ERROR: msg=Duplicate key exists in unique index "primary" in space "t" with old tuple - [321, "another_insert", 2.022] and new tuple - [321, "another_insert", 2.022] line=./src/box/index.cc file=./src/box/index.cc errno=0 type=ClientError code=3
+INFO : Socket closed: 5 (5)
+*** TEST single_conn_insert: done
+*** TEST single_conn_update started... ***
+INFO : Pending connected (5)
+DEBUG: Connected to 127.0.0.1, socket is 5
+DEBUG: Connection to 127.0.0.1:3301 has been established
+   *** TEST CASE Successful update ***
+DEBUG: Waiting for the future 22 with timeout 1000
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Greetings are received, read bytes 128
+DEBUG: Version: 197377
+DEBUG: Salt: 1580d6737a04f3a0850a6feb51cfb1509ff62ec8806310e214978894bd057285
+DEBUG: Greetings are decoded
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Header: sync=22, code=0, schema=86
+DEBUG: Header: sync=23, code=0, schema=86
+DEBUG: Feature 22 is ready and decoded
+DEBUG: Waiting for the future 23 with timeout 1000
+DEBUG: Feature 23 is ready and decoded
+INFO : Socket closed: 5 (5)
+*** TEST single_conn_update: done
+*** TEST single_conn_delete started... ***
+INFO : Pending connected (5)
+DEBUG: Connected to 127.0.0.1, socket is 5
+DEBUG: Connection to 127.0.0.1:3301 has been established
+   *** TEST CASE Successful deletes ***
+DEBUG: Waiting for the future 24 with timeout 1000
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Greetings are received, read bytes 128
+DEBUG: Version: 197377
+DEBUG: Salt: e375b97685bad446d2582be8f4ac27c6b8b4f3ea9abfba3609eee83a1c318099
+DEBUG: Greetings are decoded
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Header: sync=24, code=0, schema=86
+DEBUG: Header: sync=25, code=0, schema=86
+DEBUG: Feature 24 is ready and decoded
+Tuple: field1=123 field2=update field3=15.033 field4.first= field4.second=0
+DEBUG: Waiting for the future 25 with timeout 1000
+DEBUG: Feature 25 is ready and decoded
+   *** TEST CASE Delete by wrong key (empty response) ***
+DEBUG: Waiting for the future 26 with timeout 1000
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Header: sync=26, code=0, schema=86
+DEBUG: Feature 26 is ready and decoded
+Empty result
+INFO : Socket closed: 5 (5)
+*** TEST single_conn_delete: done
+*** TEST single_conn_upsert started... ***
+INFO : Pending connected (5)
+DEBUG: Connected to 127.0.0.1, socket is 5
+DEBUG: Connection to 127.0.0.1:3301 has been established
+   *** TEST CASE upsert-insert ***
+DEBUG: Waiting for the future 27 with timeout 1000
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Greetings are received, read bytes 128
+DEBUG: Version: 197377
+DEBUG: Salt: 4f45d68c2b84b6a0d577dd65ae69c722df4c69ef5199bb42826ad0032bf48ed9
+DEBUG: Greetings are decoded
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Header: sync=27, code=0, schema=86
+DEBUG: Feature 27 is ready and decoded
+   *** TEST CASE upsert-update ***
+DEBUG: Waiting for the future 28 with timeout 1000
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Header: sync=28, code=0, schema=86
+DEBUG: Feature 28 is ready and decoded
+INFO : Socket closed: 5 (5)
+*** TEST single_conn_upsert: done
+*** TEST single_conn_select started... ***
+INFO : Pending connected (5)
+DEBUG: Connected to 127.0.0.1, socket is 5
+DEBUG: Connection to 127.0.0.1:3301 has been established
+DEBUG: Waiting for the future 29 with timeout 1000
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Greetings are received, read bytes 128
+DEBUG: Version: 197377
+DEBUG: Salt: 6befd658710c0f3f74f8c53b6c6ab8a0f22de3708e92ba2e972f7b1af85c5d69
+DEBUG: Greetings are decoded
+DEBUG: Network engine wait for 1000 milliseconds
+DEBUG: Registered poll event 0: 5 socket is ready to read
+DEBUG: Header: sync=29, code=0, schema=86
+DEBUG: Header: sync=30, code=0, schema=86
+DEBUG: Header: sync=31, code=32786, schema=86
+DEBUG: Header: sync=32, code=0, schema=86
+DEBUG: Feature 29 is ready and decoded
+Tuple: field1=666 field2=upsert-update field3=1.01 field4.first= field4.second=0
+DEBUG: Waiting for the future 30 with timeout 1000
+DEBUG: Feature 30 is ready and decoded
+Tuple: field1=777 field2=asd field3=2.02 field4.first= field4.second=0
+DEBUG: Waiting for the future 31 with timeout 1000
+DEBUG: Feature 31 is ready and decoded
+Test failed: response->body.data != std::nullopt is false at /home/user/tntcxx/test/ClientTest.cpp:564 in test single_conn_select
+Client.test: /home/user/tntcxx/test/ClientTest.cpp:564: void single_conn_select(Connector<BUFFER, NetProvider>&) [with BUFFER = tnt::Buffer<16384>; NetProvider = EpollNetProvider<tnt::Buffer<16384>, UnixPlainStream>]: Assertion `false' failed.
+<end of output>
+Test time =   6.06 sec
+----------------------------------------------------------
+Test Failed.
+"Client.test" end time: Feb 24 15:26 MSK
+"Client.test" time elapsed: 00:00:06
+----------------------------------------------------------
+
+End testing: Feb 24 15:26 MSK

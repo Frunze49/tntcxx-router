@@ -1,0 +1,6 @@
+/home/user/tntcxx/examples/CMakeFiles/ev.dir
+/home/user/tntcxx/examples/CMakeFiles/Simple.dir
+/home/user/tntcxx/examples/CMakeFiles/Sql.dir
+/home/user/tntcxx/examples/CMakeFiles/Schemaless.dir
+/home/user/tntcxx/examples/CMakeFiles/edit_cache.dir
+/home/user/tntcxx/examples/CMakeFiles/rebuild_cache.dir

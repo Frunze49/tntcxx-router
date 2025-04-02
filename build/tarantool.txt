@@ -1,0 +1,13 @@
+2025-02-24 15:26:34.197 [164546] main/105/test_cfg.lua main.cc:498 I> Tarantool 3.3.1-0-g91caac353f6 Linux-x86_64-RelWithDebInfo
+2025-02-24 15:26:34.197 [164546] main/105/test_cfg.lua main.cc:500 I> log level 5 (INFO)
+2025-02-24 15:26:34.197 [164546] main/105/test_cfg.lua gc.c:131 I> wal/engine cleanup is paused
+2025-02-24 15:26:34.198 [164546] main/105/test_cfg.lua tuple.c:411 I> mapping 268435456 bytes for memtx tuple arena...
+2025-02-24 15:26:34.198 [164546] main/105/test_cfg.lua memtx_engine.cc:1750 I> Actual slab_alloc_factor calculated on the basis of desired slab_alloc_factor = 1.044274
+2025-02-24 15:26:34.198 [164546] main/105/test_cfg.lua tuple.c:411 I> mapping 134217728 bytes for vinyl tuple arena...
+2025-02-24 15:26:34.204 [164546] main/105/test_cfg.lua box.cc:2274 I> update replication_synchro_quorum = 1
+2025-02-24 15:26:34.204 [164546] main/105/test_cfg.lua box.cc:3329 I> The option replication_synchro_queue_max_size will actually take effect after the recovery is finished
+2025-02-24 15:26:34.204 [164546] main/105/test_cfg.lua box.cc:5439 I> instance uuid ddda4e82-9454-4a14-b755-75c9100ab42a
+2025-02-24 15:26:34.204 [164546] main/105/test_cfg.lua evio.c:364 E> tx_binary: failed to bind on 0.0.0.0:3301: bind, called on fd 28, aka 0.0.0.0:3301: Address already in use
+2025-02-24 15:26:34.204 [164546] main/105/test_cfg.lua evio.c:364 E> tx_binary: failed to bind on [::]:3301: bind, called on fd 28, aka [::]:3301: Address already in use
+2025-02-24 15:26:34.206 [164546] main/105/test_cfg.lua evio.c:368 E> SocketError: tx_binary: failed to bind, called on fd -1: Address already in use
+2025-02-24 15:26:34.206 [164546] main/105/test_cfg.lua box.cc:5987 F> can't initialize storage: tx_binary: failed to bind, called on fd -1: Address already in use

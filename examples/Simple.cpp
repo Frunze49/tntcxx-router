@@ -48,7 +48,7 @@
 
 //doclabel05-1
 const char *address = "127.0.0.1";
-int port = 3301;
+int port = 3302;
 int WAIT_TIMEOUT = 1000; //milliseconds
 //doclabel05-2
 

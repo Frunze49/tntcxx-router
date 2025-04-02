@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/SimpleExample.dir/examples/Simple.cpp.o -o SimpleExample  libev.a

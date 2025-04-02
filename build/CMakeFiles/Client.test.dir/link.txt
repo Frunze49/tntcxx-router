@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/Client.test.dir/test/ClientTest.cpp.o -o Client.test  libev.a

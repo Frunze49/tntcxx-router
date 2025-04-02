@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/LinkTest.dir/test/LinkTest/Main.cpp.o CMakeFiles/LinkTest.dir/test/LinkTest/Secondary.cpp.o -o LinkTest  libev.a

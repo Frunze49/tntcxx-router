@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/user/tntcxx/build/_deps/msgpuck-subbuild/CMakeFiles/msgpuck-populate"
+		},
+		{
+			"file" : "/home/user/tntcxx/build/_deps/msgpuck-subbuild/CMakeFiles/msgpuck-populate.rule"
+		},
+		{
+			"file" : "/home/user/tntcxx/build/_deps/msgpuck-subbuild/CMakeFiles/msgpuck-populate-complete.rule"
+		},
+		{
+			"file" : "/home/user/tntcxx/build/_deps/msgpuck-subbuild/msgpuck-populate-prefix/src/msgpuck-populate-stamp/msgpuck-populate-build.rule"
+		},
+		{
+			"file" : "/home/user/tntcxx/build/_deps/msgpuck-subbuild/msgpuck-populate-prefix/src/msgpuck-populate-stamp/msgpuck-populate-configure.rule"
+		},
+		{
+			"file" : "/home/user/tntcxx/build/_deps/msgpuck-subbuild/msgpuck-populate-prefix/src/msgpuck-populate-stamp/msgpuck-populate-download.rule"
+		},
+		{
+			"file" : "/home/user/tntcxx/build/_deps/msgpuck-subbuild/msgpuck-populate-prefix/src/msgpuck-populate-stamp/msgpuck-populate-install.rule"
+		},
+		{
+			"file" : "/home/user/tntcxx/build/_deps/msgpuck-subbuild/msgpuck-populate-prefix/src/msgpuck-populate-stamp/msgpuck-populate-mkdir.rule"
+		},
+		{
+			"file" : "/home/user/tntcxx/build/_deps/msgpuck-subbuild/msgpuck-populate-prefix/src/msgpuck-populate-stamp/msgpuck-populate-patch.rule"
+		},
+		{
+			"file" : "/home/user/tntcxx/build/_deps/msgpuck-subbuild/msgpuck-populate-prefix/src/msgpuck-populate-stamp/msgpuck-populate-test.rule"
+		},
+		{
+			"file" : "/home/user/tntcxx/build/_deps/msgpuck-subbuild/msgpuck-populate-prefix/src/msgpuck-populate-stamp/msgpuck-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"msgpuck-populate"
+		],
+		"name" : "msgpuck-populate"
+	}
+}

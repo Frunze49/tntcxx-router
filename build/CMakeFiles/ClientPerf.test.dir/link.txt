@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/ClientPerf.test.dir/test/ClientPerfTest.cpp.o -o ClientPerf.test  libev.a

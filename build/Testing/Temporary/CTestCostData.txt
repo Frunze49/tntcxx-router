@@ -1,0 +1,14 @@
+MempoolUnit.test 1 0.11169
+CStrUnit.test 1 0.00255602
+CommonUnit.test 1 0.00169116
+TraitsUnit.test 1 0.00283328
+RefVectorUnit.test 1 0.00259387
+Base64Unit.test 1 0.389451
+BufferUnit.test 1 0.0155801
+RingUnit.test 1 0.00233633
+ListUnit.test 1 0.977984
+RulesUnit.test 1 0.00446844
+EncDecUnit.test 1 0.00567176
+Client.test 0 0
+---
+Client.test

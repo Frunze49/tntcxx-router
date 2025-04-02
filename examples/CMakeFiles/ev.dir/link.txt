@@ -1,0 +1,2 @@
+/usr/bin/ar qc libev.a CMakeFiles/ev.dir/home/user/tntcxx/third_party/libev/ev.c.o
+/usr/bin/ranlib libev.a
