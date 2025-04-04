@@ -25,8 +25,11 @@ SET(COMMON_LIB example ev)
 ADD_EXECUTABLE(Simple Simple.cpp)
 TARGET_LINK_LIBRARIES(Simple ${COMMON_LIB})
 
-ADD_EXECUTABLE(Sql Sql.cpp)
-TARGET_LINK_LIBRARIES(Sql ${COMMON_LIB})
+ADD_EXECUTABLE(tarantool_proxy tarantool_proxy.cpp)
+TARGET_LINK_LIBRARIES(tarantool_proxy ${COMMON_LIB})
 
-ADD_EXECUTABLE(Schemaless Schemaless.cpp)
-TARGET_LINK_LIBRARIES(Schemaless ${COMMON_LIB})
+# ADD_EXECUTABLE(Sql Sql.cpp)
+# TARGET_LINK_LIBRARIES(Sql ${COMMON_LIB})
+
+# ADD_EXECUTABLE(Schemaless Schemaless.cpp)
+# TARGET_LINK_LIBRARIES(Schemaless ${COMMON_LIB})

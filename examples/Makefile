@@ -143,54 +143,17 @@ Simple/fast:
 .PHONY : Simple/fast
 
 #=============================================================================
-# Target rules for targets named Sql
+# Target rules for targets named tarantool_proxy
 
 # Build rule for target.
-Sql: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Sql
-.PHONY : Sql
+tarantool_proxy: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tarantool_proxy
+.PHONY : tarantool_proxy
 
 # fast build rule for target.
-Sql/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Sql.dir/build.make CMakeFiles/Sql.dir/build
-.PHONY : Sql/fast
-
-#=============================================================================
-# Target rules for targets named Schemaless
-
-# Build rule for target.
-Schemaless: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Schemaless
-.PHONY : Schemaless
-
-# fast build rule for target.
-Schemaless/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Schemaless.dir/build.make CMakeFiles/Schemaless.dir/build
-.PHONY : Schemaless/fast
-
-Schemaless.o: Schemaless.cpp.o
-.PHONY : Schemaless.o
-
-# target to build an object file
-Schemaless.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Schemaless.dir/build.make CMakeFiles/Schemaless.dir/Schemaless.cpp.o
-.PHONY : Schemaless.cpp.o
-
-Schemaless.i: Schemaless.cpp.i
-.PHONY : Schemaless.i
-
-# target to preprocess a source file
-Schemaless.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Schemaless.dir/build.make CMakeFiles/Schemaless.dir/Schemaless.cpp.i
-.PHONY : Schemaless.cpp.i
-
-Schemaless.s: Schemaless.cpp.s
-.PHONY : Schemaless.s
-
-# target to generate assembly for a file
-Schemaless.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Schemaless.dir/build.make CMakeFiles/Schemaless.dir/Schemaless.cpp.s
-.PHONY : Schemaless.cpp.s
+tarantool_proxy/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tarantool_proxy.dir/build.make CMakeFiles/tarantool_proxy.dir/build
+.PHONY : tarantool_proxy/fast
 
 Simple.o: Simple.cpp.o
 .PHONY : Simple.o
@@ -216,30 +179,6 @@ Simple.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simple.dir/build.make CMakeFiles/Simple.dir/Simple.cpp.s
 .PHONY : Simple.cpp.s
 
-Sql.o: Sql.cpp.o
-.PHONY : Sql.o
-
-# target to build an object file
-Sql.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Sql.dir/build.make CMakeFiles/Sql.dir/Sql.cpp.o
-.PHONY : Sql.cpp.o
-
-Sql.i: Sql.cpp.i
-.PHONY : Sql.i
-
-# target to preprocess a source file
-Sql.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Sql.dir/build.make CMakeFiles/Sql.dir/Sql.cpp.i
-.PHONY : Sql.cpp.i
-
-Sql.s: Sql.cpp.s
-.PHONY : Sql.s
-
-# target to generate assembly for a file
-Sql.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Sql.dir/build.make CMakeFiles/Sql.dir/Sql.cpp.s
-.PHONY : Sql.cpp.s
-
 home/user/tntcxx/third_party/libev/ev.o: home/user/tntcxx/third_party/libev/ev.c.o
 .PHONY : home/user/tntcxx/third_party/libev/ev.o
 
@@ -264,6 +203,30 @@ home/user/tntcxx/third_party/libev/ev.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ev.dir/build.make CMakeFiles/ev.dir/home/user/tntcxx/third_party/libev/ev.c.s
 .PHONY : home/user/tntcxx/third_party/libev/ev.c.s
 
+tarantool_proxy.o: tarantool_proxy.cpp.o
+.PHONY : tarantool_proxy.o
+
+# target to build an object file
+tarantool_proxy.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tarantool_proxy.dir/build.make CMakeFiles/tarantool_proxy.dir/tarantool_proxy.cpp.o
+.PHONY : tarantool_proxy.cpp.o
+
+tarantool_proxy.i: tarantool_proxy.cpp.i
+.PHONY : tarantool_proxy.i
+
+# target to preprocess a source file
+tarantool_proxy.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tarantool_proxy.dir/build.make CMakeFiles/tarantool_proxy.dir/tarantool_proxy.cpp.i
+.PHONY : tarantool_proxy.cpp.i
+
+tarantool_proxy.s: tarantool_proxy.cpp.s
+.PHONY : tarantool_proxy.s
+
+# target to generate assembly for a file
+tarantool_proxy.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tarantool_proxy.dir/build.make CMakeFiles/tarantool_proxy.dir/tarantool_proxy.cpp.s
+.PHONY : tarantool_proxy.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -272,22 +235,18 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... Schemaless"
 	@echo "... Simple"
-	@echo "... Sql"
 	@echo "... ev"
-	@echo "... Schemaless.o"
-	@echo "... Schemaless.i"
-	@echo "... Schemaless.s"
+	@echo "... tarantool_proxy"
 	@echo "... Simple.o"
 	@echo "... Simple.i"
 	@echo "... Simple.s"
-	@echo "... Sql.o"
-	@echo "... Sql.i"
-	@echo "... Sql.s"
 	@echo "... home/user/tntcxx/third_party/libev/ev.o"
 	@echo "... home/user/tntcxx/third_party/libev/ev.i"
 	@echo "... home/user/tntcxx/third_party/libev/ev.s"
+	@echo "... tarantool_proxy.o"
+	@echo "... tarantool_proxy.i"
+	@echo "... tarantool_proxy.s"
 .PHONY : help
 
 

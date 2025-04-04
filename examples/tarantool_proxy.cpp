@@ -4,7 +4,11 @@
 #include <thread>
 #include <vector>
 
+#include "../src/Client/ResponseDecoder.hpp"
+#include "../src/Buffer/Buffer.hpp"
+
 using boost::asio::ip::tcp;
+using Buf_t = tnt::Buffer<16 * 1024>;
 
 class TarantoolProxy {
 public:
@@ -19,6 +23,34 @@ public:
     }
 
 private:
+    DecodeStatus processProxyDecoder(Buf_t &buff) {
+        // if (!conn.impl->inBuf.has(conn.impl->endDecoded, MP_RESPONSE_SIZE))
+        //     return DECODE_NEEDMORE;
+
+        ResponseDecoder<Buf_t> dec(buff);
+
+        Response<Buf_t> response;
+        response.size = dec.decodeResponseSize();
+        if (response.size < 0) {
+            LOG_ERROR("Failed to decode response size");
+            std::abort();
+        }
+        response.size += MP_RESPONSE_SIZE;
+        // if (!conn.impl->inBuf.has(conn.impl->endDecoded, response.size)) {
+        //     conn.impl->dec.reset(conn.impl->endDecoded);
+        //     return DECODE_NEEDMORE;
+        // }
+        if (dec.decodeResponse(response) != 0) {
+            // conn.setError("Failed to decode response, skipping bytes..");
+            // conn.impl->endDecoded += response.size;
+            // return DECODE_ERR;
+        }
+        LOG_DEBUG("AUU __ Header: sync=", response.header.sync, ", code=",
+            response.header.code, ", schema=", response.header.schema_id);
+
+        return DECODE_SUCC;
+    }
+
     void start_accept() {
         auto new_connection = std::make_shared<tcp::socket>(io_service_);
         acceptor_.async_accept(*new_connection,
@@ -57,6 +89,13 @@ private:
                         size_t bytes_read = client_socket->read_some(
                             boost::asio::buffer(client_to_tarantool));
                         if (bytes_read == 0) break;
+
+
+                        // ResponseDecoder<Buf_t> dec(buff);
+
+                        // Response<Buf_t> request;
+                        
+                        // std::cout << "Response size: " << dec.decodeResponseSize() << std::endl;
                         
                         boost::asio::write(tarantool_socket, 
                             boost::asio::buffer(client_to_tarantool, bytes_read));
@@ -73,6 +112,12 @@ private:
                         boost::asio::buffer(tarantool_to_client));
                     if (bytes_read == 0) break;                
                     
+                    std::cout << "Bytes read: " << bytes_read << "\n";
+
+                    Buf_t buff;
+                    buff.write(client_to_tarantool);
+                    processProxyDecoder(buff);
+
                     boost::asio::write(*client_socket, 
                         boost::asio::buffer(tarantool_to_client, bytes_read));
                 }

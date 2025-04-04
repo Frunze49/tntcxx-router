@@ -46,6 +46,5 @@ set(CMAKE_MAKEFILE_PRODUCTS
 set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/ev.dir/DependInfo.cmake"
   "CMakeFiles/Simple.dir/DependInfo.cmake"
-  "CMakeFiles/Sql.dir/DependInfo.cmake"
-  "CMakeFiles/Schemaless.dir/DependInfo.cmake"
+  "CMakeFiles/tarantool_proxy.dir/DependInfo.cmake"
   )
