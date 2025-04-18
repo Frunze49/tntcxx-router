@@ -1,0 +1,2 @@
+/usr/bin/ar qc libmsgpuck.a CMakeFiles/msgpuck.dir/msgpuck.c.o CMakeFiles/msgpuck.dir/hints.c.o
+/usr/bin/ranlib libmsgpuck.a

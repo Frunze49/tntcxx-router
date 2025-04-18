@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/RulesUnit.test.dir/test/RulesUnitTest.cpp.o -o RulesUnit.test  libev.a 

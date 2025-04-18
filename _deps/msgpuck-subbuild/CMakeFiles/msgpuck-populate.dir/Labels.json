@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/adil/tntcxx-router/_deps/msgpuck-subbuild/CMakeFiles/msgpuck-populate"
+		},
+		{
+			"file" : "/home/adil/tntcxx-router/_deps/msgpuck-subbuild/CMakeFiles/msgpuck-populate.rule"
+		},
+		{
+			"file" : "/home/adil/tntcxx-router/_deps/msgpuck-subbuild/CMakeFiles/msgpuck-populate-complete.rule"
+		},
+		{
+			"file" : "/home/adil/tntcxx-router/_deps/msgpuck-subbuild/msgpuck-populate-prefix/src/msgpuck-populate-stamp/msgpuck-populate-build.rule"
+		},
+		{
+			"file" : "/home/adil/tntcxx-router/_deps/msgpuck-subbuild/msgpuck-populate-prefix/src/msgpuck-populate-stamp/msgpuck-populate-configure.rule"
+		},
+		{
+			"file" : "/home/adil/tntcxx-router/_deps/msgpuck-subbuild/msgpuck-populate-prefix/src/msgpuck-populate-stamp/msgpuck-populate-download.rule"
+		},
+		{
+			"file" : "/home/adil/tntcxx-router/_deps/msgpuck-subbuild/msgpuck-populate-prefix/src/msgpuck-populate-stamp/msgpuck-populate-install.rule"
+		},
+		{
+			"file" : "/home/adil/tntcxx-router/_deps/msgpuck-subbuild/msgpuck-populate-prefix/src/msgpuck-populate-stamp/msgpuck-populate-mkdir.rule"
+		},
+		{
+			"file" : "/home/adil/tntcxx-router/_deps/msgpuck-subbuild/msgpuck-populate-prefix/src/msgpuck-populate-stamp/msgpuck-populate-patch.rule"
+		},
+		{
+			"file" : "/home/adil/tntcxx-router/_deps/msgpuck-subbuild/msgpuck-populate-prefix/src/msgpuck-populate-stamp/msgpuck-populate-test.rule"
+		},
+		{
+			"file" : "/home/adil/tntcxx-router/_deps/msgpuck-subbuild/msgpuck-populate-prefix/src/msgpuck-populate-stamp/msgpuck-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"msgpuck-populate"
+		],
+		"name" : "msgpuck-populate"
+	}
+}

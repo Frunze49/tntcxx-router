@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/CStrUnit.test.dir/test/CStrUnitTest.cpp.o -o CStrUnit.test  libev.a 

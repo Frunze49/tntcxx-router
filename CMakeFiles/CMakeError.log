@@ -1,0 +1,15 @@
+Performing C SOURCE FILE Test CC_HAS_MNO_UNALIGNED_ACCESS failed with the following output:
+Change Dir: /home/adil/tntcxx-router/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_99640/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_99640.dir/build.make CMakeFiles/cmTC_99640.dir/build
+gmake[1]: Entering directory '/home/adil/tntcxx-router/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_99640.dir/src.c.o
+/usr/bin/cc -DCC_HAS_MNO_UNALIGNED_ACCESS  -std=c99 -fPIC -fstrict-aliasing    -mno-unaligned-access -o CMakeFiles/cmTC_99640.dir/src.c.o -c /home/adil/tntcxx-router/CMakeFiles/CMakeTmp/src.c
+cc: error: unrecognized command-line option '-mno-unaligned-access'
+gmake[1]: *** [CMakeFiles/cmTC_99640.dir/build.make:78: CMakeFiles/cmTC_99640.dir/src.c.o] Error 1
+gmake[1]: Leaving directory '/home/adil/tntcxx-router/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_99640/fast] Error 2
+
+
+Source file was:
+int main(void) { return 0; }

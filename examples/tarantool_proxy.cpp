@@ -4,11 +4,13 @@
 #include <thread>
 #include <vector>
 
-#include "../src/Client/ResponseDecoder.hpp"
+#include "../src/Client/RequestDecoder.hpp"
+
 #include "../src/Buffer/Buffer.hpp"
 
 using boost::asio::ip::tcp;
 using Buf_t = tnt::Buffer<16 * 1024>;
+
 
 class TarantoolProxy {
 public:
@@ -23,32 +25,47 @@ public:
     }
 
 private:
-    DecodeStatus processProxyDecoder(Buf_t &buff) {
-        // if (!conn.impl->inBuf.has(conn.impl->endDecoded, MP_RESPONSE_SIZE))
-        //     return DECODE_NEEDMORE;
-
-        ResponseDecoder<Buf_t> dec(buff);
-
-        Response<Buf_t> response;
-        response.size = dec.decodeResponseSize();
-        if (response.size < 0) {
-            LOG_ERROR("Failed to decode response size");
-            std::abort();
+    void processRequestType(Request &request) {
+        auto code = request.header.code;
+        if (code == Iproto::SELECT) {
+            // SELECT
+            LOG_INFO("SELECT request - ",
+                     "sync: ", request.header.sync,
+                     ", space_id: ", request.body.space_id.value(),
+                     ", index_id: ", request.body.index_id.value(),
+                     ", key: ", std::get<int>(request.body.keys.value().at(0)));
+        } else if (code == Iproto::INSERT) {
+            // INSERT
+        } else if (code == Iproto::REPLACE) {
+            // REPLACE
+        } else if (code == Iproto::UPDATE) {
+            // UPDATE
+        } else if (code == Iproto::DELETE) {
+            // DELETE
+        } else if (code == Iproto::PING) {
+            // PING
         }
-        response.size += MP_RESPONSE_SIZE;
-        // if (!conn.impl->inBuf.has(conn.impl->endDecoded, response.size)) {
-        //     conn.impl->dec.reset(conn.impl->endDecoded);
-        //     return DECODE_NEEDMORE;
-        // }
-        if (dec.decodeResponse(response) != 0) {
-            // conn.setError("Failed to decode response, skipping bytes..");
-            // conn.impl->endDecoded += response.size;
-            // return DECODE_ERR;
-        }
-        LOG_DEBUG("AUU __ Header: sync=", response.header.sync, ", code=",
-            response.header.code, ", schema=", response.header.schema_id);
+    }
 
-        return DECODE_SUCC;
+    void processProxyDecoder(Buf_t &buff) {
+        while (!buff.empty())
+        {
+            RequestDecoder<Buf_t> dec(buff);
+            Request request;
+            request.size = dec.decodeRequestSize();
+            if (request.size < 0) {
+                LOG_ERROR("Failed to decode request size");
+                return;
+            }
+            request.size += MP_REQUEST_SIZE;
+            
+            if (dec.decodeRequest(request) != 0) {
+                LOG_ERROR("Failed to decode request");
+                return;
+            }
+            processRequestType(request);
+            buff.dropFront(request.size);
+        }
     }
 
     void start_accept() {
@@ -74,28 +91,24 @@ private:
             tcp::socket tarantool_socket(io_service_);
             boost::asio::connect(tarantool_socket, endpoint_iterator);
 
-            // Устанавливаем таймауты
             client_socket->set_option(tcp::socket::reuse_address(true));
             tarantool_socket.set_option(tcp::socket::reuse_address(true));
             
-            // Буферы для данных
             std::vector<char> client_to_tarantool(4096);
-            std::vector<char> tarantool_to_client(4096);
             
-            // Обеспечиваем двунаправленную передачу данных
             std::thread([&]() {
                 try {
                     while (true) {
+                        Buf_t buffer;
                         size_t bytes_read = client_socket->read_some(
                             boost::asio::buffer(client_to_tarantool));
                         if (bytes_read == 0) break;
 
-
-                        // ResponseDecoder<Buf_t> dec(buff);
-
-                        // Response<Buf_t> request;
-                        
-                        // std::cout << "Response size: " << dec.decodeResponseSize() << std::endl;
+                        for (size_t i = 0; i < bytes_read; ++i) {
+                            buffer.write(client_to_tarantool[i]);
+                        }
+                        processProxyDecoder(buffer);
+                        buffer.flush();
                         
                         boost::asio::write(tarantool_socket, 
                             boost::asio::buffer(client_to_tarantool, bytes_read));
@@ -105,18 +118,14 @@ private:
                 }
             }).detach();
             
-            // Проксируем ответы от Tarantool клиенту
             try {
+                Buf_t buffer;
                 while (true) {
+                    Buf_t buffer;
+                    std::vector<char> tarantool_to_client(4096);
                     size_t bytes_read = tarantool_socket.read_some(
                         boost::asio::buffer(tarantool_to_client));
-                    if (bytes_read == 0) break;                
-                    
-                    std::cout << "Bytes read: " << bytes_read << "\n";
-
-                    Buf_t buff;
-                    buff.write(client_to_tarantool);
-                    processProxyDecoder(buff);
+                    if (bytes_read == 0) break;
 
                     boost::asio::write(*client_socket, 
                         boost::asio::buffer(tarantool_to_client, bytes_read));
@@ -124,8 +133,7 @@ private:
             } catch (std::exception& e) {
                 std::cerr << "Tarantool to client error: " << e.what() << std::endl;
             }
-            
-            // Закрываем соединения
+
             client_socket->close();
             tarantool_socket.close();
             

@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/TraitsUnit.test.dir/test/TraitsUnitTest.cpp.o -o TraitsUnit.test  libev.a 

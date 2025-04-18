@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/ev.dir/home/user/tntcxx/third_party/libev/ev.c.o"
-  "CMakeFiles/ev.dir/home/user/tntcxx/third_party/libev/ev.c.o.d"
+  "CMakeFiles/ev.dir/home/adil/tntcxx-router/third_party/libev/ev.c.o"
+  "CMakeFiles/ev.dir/home/adil/tntcxx-router/third_party/libev/ev.c.o.d"
   "libev.a"
   "libev.pdb"
 )

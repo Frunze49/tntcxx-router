@@ -52,6 +52,7 @@ class UnixStream : public Stream {
 public:
 	/* Disabled copy, enabled move. */
 	UnixStream() = default;
+	UnixStream(int fd);
 	~UnixStream() noexcept;
 	UnixStream(const UnixStream&) = delete;
 	UnixStream &operator=(const UnixStream&) = delete;
@@ -65,6 +66,10 @@ public:
 
 	/** Get internal file descriptor of the socket. */
 	int get_fd() const { return fd; }
+	void set_fd(int new_fd) { 
+		fd = new_fd;
+		set_status(SS_ESTABLISHED);
+	}
 
 protected:
 	/** Log helpers. */
@@ -140,6 +145,10 @@ UnixStream::tell(StreamStatus st, const char *file, int line,
 	log_wise(INFO, file, line, msg, std::forward<MSG>(more)...);
 	set_status(st);
 	return 0;
+}
+
+UnixStream::UnixStream(int fd_) : fd(fd_)
+{
 }
 
 inline int

@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/RingUnit.test.dir/test/RingUnitTest.cpp.o -o RingUnit.test  libev.a 

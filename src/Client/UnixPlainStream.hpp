@@ -65,6 +65,12 @@ public:
 	 * One must check the stream status to understand what happens.
 	 */
 	ssize_t recv(struct iovec *iov, size_t iov_count);
+	/**
+     * Shutdown the stream (partial or full closure).
+     * how is SHUT_RD, SHUT_WR or SHUT_RDWR
+     * Return 0 on success, -1 on error
+     */
+    int shutdown(int how = SHUT_RDWR) noexcept;
 };
 
 /////////////////////////////////////////////////////////////////////
@@ -147,4 +153,37 @@ UnixPlainStream::recv(struct iovec *iov, size_t iov_count)
 		else
 			return US_DIE("Recv failed", strerror(errno));
 	}
+}
+
+inline int
+UnixPlainStream::shutdown(int how) noexcept
+{
+    if (has_status(SS_DEAD)) {
+        return 0;
+    }
+
+    int fd = get_fd();
+    if (fd < 0) {
+        return 0;
+    }
+
+    int rc = ::shutdown(fd, how);
+    if (rc < 0) {
+        if (errno == ENOTCONN || errno == EINVAL) {
+            return 0;
+        }
+        return -1;
+    }
+
+    if (how == SHUT_RD || how == SHUT_RDWR) {
+        remove_status(SS_NEED_EVENT_FOR_READ | SS_NEED_READ_EVENT_FOR_READ);
+    }
+    if (how == SHUT_WR || how == SHUT_RDWR) {
+        remove_status(SS_NEED_EVENT_FOR_WRITE | SS_NEED_WRITE_EVENT_FOR_WRITE);
+    }
+    if (how == SHUT_RDWR) {
+        set_status(SS_DEAD);
+    }
+
+    return 0;
 }

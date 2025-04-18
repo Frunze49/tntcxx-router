@@ -1,0 +1,3 @@
+/home/adil/tntcxx-router/_deps/msgpuck-subbuild/CMakeFiles/msgpuck-populate.dir
+/home/adil/tntcxx-router/_deps/msgpuck-subbuild/CMakeFiles/edit_cache.dir
+/home/adil/tntcxx-router/_deps/msgpuck-subbuild/CMakeFiles/rebuild_cache.dir
