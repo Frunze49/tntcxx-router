@@ -60,6 +60,7 @@ namespace Iproto {
 		GROUP_ID = 0x07,
 		TSN = 0x08,
 		FLAGS = 0x09,
+		STREAM_ID = 0x0a,
 		SPACE_ID = 0x10,
 		INDEX_ID = 0x11,
 		LIMIT = 0x12,

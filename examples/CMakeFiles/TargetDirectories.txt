@@ -1,5 +1,0 @@
-/home/adil/tntcxx-router/examples/CMakeFiles/ev.dir
-/home/adil/tntcxx-router/examples/CMakeFiles/Simple.dir
-/home/adil/tntcxx-router/examples/CMakeFiles/epoll.dir
-/home/adil/tntcxx-router/examples/CMakeFiles/edit_cache.dir
-/home/adil/tntcxx-router/examples/CMakeFiles/rebuild_cache.dir

@@ -1,2 +1,0 @@
-/usr/bin/ar qc libev.a CMakeFiles/ev.dir/home/adil/tntcxx-router/third_party/libev/ev.c.o
-/usr/bin/ranlib libev.a

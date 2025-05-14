@@ -1,1 +1,0 @@
-/usr/bin/c++ -g CMakeFiles/Simple.dir/Simple.cpp.o -o Simple  libev.a 

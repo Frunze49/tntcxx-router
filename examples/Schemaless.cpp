@@ -73,7 +73,7 @@ decodeSchemalessTuple(Data<BUFFER> &data)
 
 template<class BUFFER>
 void
-printResponse(Response<BUFFER> &response)
+printResponse(Message<BUFFER> &response)
 {
 	std::cout << ">>> RESPONSE {" << std::endl;
 	if (response.body.error_stack != std::nullopt) {
@@ -153,7 +153,7 @@ main()
 	}
 	/* Wait for all futures and then print each response. */
 	client.waitAll(conn, futures);
-	Response<Buf_t> response;
+	Message<Buf_t> response;
 	for (const auto &f : futures) {
 		assert(conn.futureIsReady(f));
 		response = conn.getResponse(f);

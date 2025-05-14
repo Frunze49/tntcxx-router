@@ -42,6 +42,7 @@
 #include <cstring>
 #include <string>
 #include <string_view>
+#include <set>
 
 #include "ProxyConnection.hpp"
 
@@ -54,43 +55,41 @@ public:
 	using Buffer_t = BUFFER;
 	using Stream_t = Stream;
 	using NetProvider_t = ProxyEpollNetProvider<BUFFER, Stream>;
-	using Conn_t = ProxyConnection<BUFFER, NetProvider_t >;
+	using Conn_t = ProxyConnection<BUFFER, NetProvider_t>;
 	using Connector_t = ProxyConnector<BUFFER, NetProvider_t >;
 	ProxyEpollNetProvider(Connector_t &connector);
 	~ProxyEpollNetProvider();
-	int connect(Conn_t &conn, const ConnectOptions &opts, int client_fd);
 	void close(Stream_t &strm);
 	void close(Conn_t &conn);
 	/** Proxy to sockets; polling using epoll. */
-	int WaitClientToTnt();
-	int WaitTntToClient();
-	int Wait();
+	void Wait();
+	void SetServerFd(int fd);
+	void AcceptNewClient();
 
-	/** <socket : connection> map. Contains both ready to read/send connections */
-	int m_ClientEpollFd;
-	int m_TntEpollFd;
 	int m_AllEpollFd;
-
-private:
-	static constexpr int TIMEOUT_INFINITY = -1;
-	static constexpr size_t EPOLL_EVENTS_MAX = 128;
 
 	//return 0 if all data from buffer was processed (sent or read);
 	//return -1 in case of errors;
 	//return 1 in case socket is blocked.
-	int sendToClient(Conn_t &conn);
-	int sendToTnt(Conn_t &conn);
+	Stream_t& connect(Conn_t &conn, int instance_index);
+	int sendDec(Conn_t &conn, Stream_t &strm, int size = -1);
+	int sendEnc(Conn_t &conn, Stream_t &strm, int size = -1);
+	int recv(Conn_t &conn, Stream_t &strm);
 
-	int recvFromClient(Conn_t &conn);
-	int recvFromTnt(Conn_t &conn);
+	void addToEpoll(Conn_t *conn, Stream_t &strm);
 
-	void registerEpoll(Conn_t &conn);
-	void addToEpoll(Conn_t &conn, int fd);
-	void deleteConnectionFromEpoll(Conn_t &conn);
-	void deleteStreamFromEpoll(int fd);
-
-	int server_fd_;
 	Connector_t &m_Connector;
+
+	std::map<Stream_t *, Conn_t*> strm_to_conn;
+	std::set<int> greeting_expected_on_fd;
+	std::set<int> new_clients;
+	std::map<int, int> instance_id_to_active_connetions;
+
+private:
+	Stream_t server_strm_; 
+	static constexpr int TIMEOUT_INFINITY = -1;
+	static constexpr size_t EPOLL_EVENTS_MAX = 128;
+
 	std::list<ProxyConnection<BUFFER, ProxyEpollNetProvider>> conns_;
 };
 
@@ -98,98 +97,31 @@ template<class BUFFER, class Stream>
 ProxyEpollNetProvider<BUFFER, Stream>::ProxyEpollNetProvider(Connector_t &connector) :
 	m_Connector(connector)
 {
-	m_ClientEpollFd = epoll_create1(EPOLL_CLOEXEC);
-		if (m_ClientEpollFd == -1) {
-		LOG_ERROR("Failed to initialize client epoll: ", strerror(errno));
-		abort();
-	}
-	m_TntEpollFd = epoll_create1(EPOLL_CLOEXEC);
-	if (m_TntEpollFd == -1) {
-		LOG_ERROR("Failed to initialize tnt epoll: ", strerror(errno));
-		abort();
-	}
 	m_AllEpollFd = epoll_create1(EPOLL_CLOEXEC);
-		if (m_ClientEpollFd == -1) {
+		if (m_AllEpollFd == -1) {
 		LOG_ERROR("Failed to initialize client epoll: ", strerror(errno));
 		abort();
-	}
-
-	auto &conn = m_Connector.wakeUpConnection_;
-	auto &client_strm = conn.get_client_strm();
-	client_strm.set_fd(eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC));
-
-	auto &tnt_strm = conn.get_tnt_strm();
-	tnt_strm.set_fd(eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC));
-	
-	struct epoll_event wake_event;
-	wake_event.events = EPOLLIN;
-	wake_event.data.ptr = conn.getImpl();
-	if (epoll_ctl(m_ClientEpollFd, EPOLL_CTL_ADD, client_strm.get_fd(), &wake_event) != 0) {
-		LOG_INFO("HZ");
-	}
-	if (epoll_ctl(m_TntEpollFd, EPOLL_CTL_ADD, tnt_strm.get_fd(), &wake_event) != 0) {
-		LOG_INFO("HZ");
 	}
 }
 
 template<class BUFFER, class Stream>
 ProxyEpollNetProvider<BUFFER, Stream>::~ProxyEpollNetProvider()
 {
-	::close(m_ClientEpollFd);
-	::close(m_TntEpollFd);
 	::close(m_AllEpollFd);
-	m_ClientEpollFd = -1;
-	m_TntEpollFd = -1;
 	m_AllEpollFd = -1;
 }
 
 template<class BUFFER, class Stream>
 void
-ProxyEpollNetProvider<BUFFER, Stream>::registerEpoll(Conn_t &conn)
-{
-	/* Configure epoll with new socket. */
-	assert(m_ClientEpollFd >= 0);
-	assert(m_TntEpollFd >= 0);
-	assert(m_AllEpollFd >= 0);
-	struct epoll_event event;
-	event.events = EPOLLIN;
-	event.data.ptr = conn.getImpl();
-	if (epoll_ctl(m_ClientEpollFd, EPOLL_CTL_ADD, conn.get_client_strm().get_fd(),
-		      &event) != 0) {
-		LOG_ERROR("Failed to add socket to epoll: "
-			  "epoll_ctl() returned with errno: ",
-			  strerror(errno));
-		abort();
-	}
-
-	if (epoll_ctl(m_TntEpollFd, EPOLL_CTL_ADD, conn.get_tnt_strm().get_fd(),
-		      &event) != 0) {
-		LOG_ERROR("Failed to add socket to epoll: "
-			  "epoll_ctl() returned with errno: ",
-			  strerror(errno));
-		abort();
-	}
-
-	if (epoll_ctl(m_AllEpollFd, EPOLL_CTL_ADD, conn.get_tnt_strm().get_fd(),
-		      &event) != 0) {
-		LOG_ERROR("Failed to add socket to epoll: "
-			  "epoll_ctl() returned with errno: ",
-			  strerror(errno));
-		abort();
-	}
-}
-
-template<class BUFFER, class Stream>
-void
-ProxyEpollNetProvider<BUFFER, Stream>::addToEpoll(Conn_t &conn, int fd)
+ProxyEpollNetProvider<BUFFER, Stream>::addToEpoll(Conn_t *conn, Stream_t &strm)
 {
 	assert(m_AllEpollFd >= 0);
 	struct epoll_event event;
 	event.events = EPOLLIN;
-	event.data.fd = fd;
-	event.data.ptr = conn.getImpl();
+	event.data.ptr = &strm;
+	strm_to_conn[&strm] = conn;
 
-	if (epoll_ctl(m_AllEpollFd, EPOLL_CTL_ADD, fd,
+	if (epoll_ctl(m_AllEpollFd, EPOLL_CTL_ADD, strm.get_fd(),
 		      &event) != 0) {
 		LOG_ERROR("Failed to add socket to epoll: "
 			  "epoll_ctl() returned with errno: ",
@@ -200,52 +132,33 @@ ProxyEpollNetProvider<BUFFER, Stream>::addToEpoll(Conn_t &conn, int fd)
 
 template<class BUFFER, class Stream>
 void
-ProxyEpollNetProvider<BUFFER, Stream>::deleteConnectionFromEpoll(Conn_t &conn)
+ProxyEpollNetProvider<BUFFER, Stream>::SetServerFd(int fd)
 {
-	assert(m_AllEpollFd >= 0);
-
-	// if (epoll_ctl(m_AllEpollFd, EPOLL_CTL_DEL, fd, nullptr) != 0) {
-	// 	LOG_ERROR("Failed to delete socket from epoll: "
-	// 		  "epoll_ctl() returned with errno: ",
-	// 		  strerror(errno));
-	// 	abort();
-	// }
+	server_strm_.set_fd(fd);
+	addToEpoll(nullptr, server_strm_);
 }
 
 template<class BUFFER, class Stream>
 void
-ProxyEpollNetProvider<BUFFER, Stream>::deleteStreamFromEpoll(int fd)
+ProxyEpollNetProvider<BUFFER, Stream>::AcceptNewClient()
 {
-	assert(m_AllEpollFd >= 0);
-
-	if (epoll_ctl(m_AllEpollFd, EPOLL_CTL_DEL, fd, nullptr) != 0) {
-		LOG_ERROR("Failed to delete socket from epoll: "
-			  "epoll_ctl() returned with errno: ",
-			  strerror(errno));
-		abort();
+	// Accept
+	sockaddr_in client_addr;
+	socklen_t client_len = sizeof(client_addr);
+	int client_fd = accept(server_strm_.get_fd(), 
+							reinterpret_cast<sockaddr*>(&client_addr),
+							&client_len);
+	if (client_fd == -1) {
+		LOG_ERROR("Accept failed", strerror(errno));
+		// stop();
+		return;
 	}
-}
 
-template<class BUFFER, class Stream>
-int
-ProxyEpollNetProvider<BUFFER, Stream>::connect(Conn_t &conn,
-					  const ConnectOptions &opts, int client_fd)
-{
-	auto &client_strm = conn.get_client_strm();
-	client_strm.set_fd(client_fd);
-
-	LOG_DEBUG("Accepted connection: socket is ", client_strm.get_fd());
-
-	auto &tnt_stream = conn.get_tnt_strm();
-	if (tnt_stream.connect(opts) < 0) {
-		conn.setError("Failed to establish connection to " +
-			      opts.address);
-		return -1;
-	}
-	LOG_DEBUG("Connected to ", opts.address, ", socket is ", tnt_stream.get_fd());
-
-	registerEpoll(conn);
-	return 0;
+	new_clients.insert(client_fd);
+	// Add to Epoll
+	conns_.emplace_back(ProxyConnection<BUFFER, ProxyEpollNetProvider>(m_Connector));
+	conns_.back().get_client_strm().set_fd(client_fd);
+	addToEpoll(&conns_.back(), conns_.back().get_client_strm());
 }
 
 template<class BUFFER, class Stream>
@@ -272,8 +185,6 @@ ProxyEpollNetProvider<BUFFER, Stream>::close(Stream_t& strm)
 			  " corresponding to address ", addr);
 	}
 #endif
-	epoll_ctl(m_ClientEpollFd, EPOLL_CTL_DEL, was_fd, nullptr); // ?
-	epoll_ctl(m_TntEpollFd, EPOLL_CTL_DEL, was_fd, nullptr);
 	epoll_ctl(m_AllEpollFd, EPOLL_CTL_DEL, was_fd, nullptr);
 }
 
@@ -281,67 +192,66 @@ template<class BUFFER, class Stream>
 void
 ProxyEpollNetProvider<BUFFER, Stream>::close(Conn_t &conn)
 {
+	// stop streams
 	close(conn.get_client_strm());
-	close(conn.get_tnt_strm());
-	auto it = std::find(m_Connector.conns_.begin(), m_Connector.conns_.begin(), conn);
+	for (auto &c : conn.get_external_strms()) {
+		instance_id_to_active_connetions[c.first]--;
+
+		strm_to_conn.erase(&c.second);
+		greeting_expected_on_fd.erase(c.second.get_fd());
+		close(c.second);
+	}
+
+	// remove from vector of connections
+	auto it = std::find(conns_.begin(), conns_.end(), conn);
     
-    if (it != m_Connector.conns_.end()) {
-        m_Connector.conns_.erase(it);
+    if (it != conns_.end()) {
+        conns_.erase(it);
     }
 }
 
 template<class BUFFER, class Stream>
 int
-ProxyEpollNetProvider<BUFFER, Stream>::recvFromClient(Conn_t &conn)
+ProxyEpollNetProvider<BUFFER, Stream>::recv(Conn_t &conn, Stream_t &strm)
 {
-	auto &buf = conn.getClientToTntBuf();
+	// prepare buff
+	auto& buf = conn.getDecBuf();
 	auto itr = buf.template end<true>();
 	buf.write({CONN_READAHEAD});
 	struct iovec iov[IOVEC_MAX_SIZE];
 	size_t iov_cnt = buf.getIOV(itr, iov, IOVEC_MAX_SIZE);
-
-	ssize_t rcvd = conn.get_client_strm().recv(iov, iov_cnt);
-	clientHasNotRecvBytes(conn, CONN_READAHEAD - (rcvd < 0 ? 0 : rcvd));
+	
+	// recv
+	ssize_t rcvd = strm.recv(iov, iov_cnt);
+	hasNotRecvBytes(conn, CONN_READAHEAD - (rcvd < 0 ? 0 : rcvd));
 	if (rcvd < 0) {
 		// peer shudown
 		return -1;
 	}
-	LOG_DEBUG("Client->Tnt: Successfully read ", std::to_string(rcvd), " bytes.");
 	return rcvd;
 }
 
 template<class BUFFER, class Stream>
 int
-ProxyEpollNetProvider<BUFFER, Stream>::recvFromTnt(Conn_t &conn)
+ProxyEpollNetProvider<BUFFER, Stream>::sendDec(Conn_t &conn, Stream_t &strm, int size)
 {
-	auto &buf = conn.getTntToClientBuf();
-	auto itr = buf.template end<true>();
-	buf.write({CONN_READAHEAD});
-	struct iovec iov[IOVEC_MAX_SIZE];
-	size_t iov_cnt = buf.getIOV(itr, iov, IOVEC_MAX_SIZE);
-
-	ssize_t rcvd = conn.get_tnt_strm().recv(iov, iov_cnt);
-	tntHasNotRecvBytes(conn, CONN_READAHEAD - (rcvd < 0 ? 0 : rcvd));
-	if (rcvd < 0) {
-		conn.setError(std::string("Failed to receive response: ") +
-					  strerror(errno), errno);
-		return -1;
-	}
-	LOG_DEBUG("Tnt->Client: Successfully read ", std::to_string(rcvd), " bytes.");
-	return rcvd;
-}
-
-template<class BUFFER, class Stream>
-int
-ProxyEpollNetProvider<BUFFER, Stream>::sendToClient(Conn_t &conn)
-{
-	while (tntHasDataToSend(conn)) {
+	if (hasDecodedDataToSend(conn)) {
+		// prepare buff
 		struct iovec iov[IOVEC_MAX_SIZE];
-		auto &buf = conn.getTntToClientBuf();
-		size_t iov_cnt = buf.getIOV(buf.template begin<true>(),
-					    iov, IOVEC_MAX_SIZE);
+		auto& buf = conn.getDecBuf();
 
-		ssize_t sent = conn.get_client_strm().send(iov, iov_cnt);
+		size_t iov_cnt;
+		if (size != -1) {
+			auto end_of_req = buf.template begin<true>() + size;
+			iov_cnt = buf.getIOV(buf.template begin<true>(), end_of_req,
+					    iov, IOVEC_MAX_SIZE);
+		} else {
+			iov_cnt = buf.getIOV(buf.template begin<true>(),
+				iov, IOVEC_MAX_SIZE);
+		}
+
+		// send
+		ssize_t sent = strm.send(iov, iov_cnt);
 		if (sent < 0) {
 			conn.setError(std::string("Failed to send request: ") +
 				      strerror(errno), errno);
@@ -349,8 +259,7 @@ ProxyEpollNetProvider<BUFFER, Stream>::sendToClient(Conn_t &conn)
 		} else if (sent == 0) {
 			return 1;
 		} else {
-			tntHasSentBytes(conn, sent);
-			LOG_DEBUG("Tnt->Client: Successfully send ", sent, " bytes.");
+			hasSentDecodedData(conn, sent);
 		}
 	}
 	/* All data from connection has been successfully written. */
@@ -359,15 +268,25 @@ ProxyEpollNetProvider<BUFFER, Stream>::sendToClient(Conn_t &conn)
 
 template<class BUFFER, class Stream>
 int
-ProxyEpollNetProvider<BUFFER, Stream>::sendToTnt(Conn_t &conn)
+ProxyEpollNetProvider<BUFFER, Stream>::sendEnc(Conn_t &conn, Stream_t &strm, int size)
 {
-	while (clientHasDataToSend(conn)) {
+	if (hasEncodedDataToSend(conn)) {
+		// prepare buff
 		struct iovec iov[IOVEC_MAX_SIZE];
-		auto &buf = conn.getClientToTntBuf();
-		size_t iov_cnt = buf.getIOV(buf.template begin<true>(),
-					    iov, IOVEC_MAX_SIZE);
+		auto& buf = conn.getEncBuf();
 
-		ssize_t sent = conn.get_tnt_strm().send(iov, iov_cnt);
+		size_t iov_cnt;
+		if (size != -1) {
+			auto end_of_req = buf.template begin<true>() + size;
+			iov_cnt = buf.getIOV(buf.template begin<true>(), end_of_req,
+					    iov, IOVEC_MAX_SIZE);
+		} else {
+			iov_cnt = buf.getIOV(buf.template begin<true>(),
+				iov, IOVEC_MAX_SIZE);
+		}
+
+		// send
+		ssize_t sent = strm.send(iov, iov_cnt);
 		if (sent < 0) {
 			conn.setError(std::string("Failed to send request: ") +
 				      strerror(errno), errno);
@@ -375,138 +294,61 @@ ProxyEpollNetProvider<BUFFER, Stream>::sendToTnt(Conn_t &conn)
 		} else if (sent == 0) {
 			return 1;
 		} else {
-			clientHasSentBytes(conn, sent);
-			LOG_DEBUG("Client->Tnt: Successfully send ", sent, " bytes.");
+			hasSentEncodedData(conn, sent);
 		}
 	}
+	/* All data from connection has been successfully written. */
 	return 0;
 }
 
 template<class BUFFER, class Stream>
-int
-ProxyEpollNetProvider<BUFFER, Stream>::WaitClientToTnt()
+Stream&
+ProxyEpollNetProvider<BUFFER, Stream>::connect(Conn_t &conn, int instance_index)
 {
-	struct epoll_event events[EPOLL_EVENTS_MAX];
-	int event_cnt = epoll_wait(m_ClientEpollFd, events, EPOLL_EVENTS_MAX, TIMEOUT_INFINITY);
-	if (event_cnt < 0) {
-		LOG_ERROR("Poll failed: ", strerror(errno));
-		return -1;
+	auto &strm = conn.getImpl()->instance_index_to_strm[instance_index];
+	if (strm.get_fd() > 0) return strm;
+	strm.connect(m_Connector.opts_[instance_index]);
+	if (m_Connector.opts_[instance_index].is_tnt) {
+		greeting_expected_on_fd.insert(strm.get_fd());
 	}
-	for (int i = 0; i < event_cnt; ++i) {
-		Conn_t conn((typename Conn_t::Impl_t *)events[i].data.ptr);
-		if (conn == m_Connector.wakeUpConnection_) {
-			uint64_t wake_up;
-			if (!read(conn.get_client_strm().get_fd(), &wake_up, sizeof(uint64_t))) {
-				LOG_DEBUG("SAD");
-			}
-			return 0;
-		}
-		if ((events[i].events & EPOLLIN) != 0) {
-			LOG_DEBUG("Client->Tnt: EPOLLIN - socket ",
-				  conn.get_client_strm().get_fd(),
-				  " is ready to read");
-
-			int rc = recvFromClient(conn);
-			if (rc < 0) {
-				// peer shutdown
-				close(conn);
-				return -1;
-			}
-			assert(clientHasDataToDecode(conn));
-
-			if (connectionDecodeRequests(conn) == -1) {
-				close(conn);
-				return -1;
-			}
-
-			sendToTnt(conn);
-		}
-	}
-	return 0;
+	instance_id_to_active_connetions[instance_index]++;
+	addToEpoll(&conn, strm);
+	return strm;
 }
 
 template<class BUFFER, class Stream>
-int
-ProxyEpollNetProvider<BUFFER, Stream>::WaitTntToClient()
-{
-	struct epoll_event events[EPOLL_EVENTS_MAX];
-	int event_cnt = epoll_wait(m_TntEpollFd, events, EPOLL_EVENTS_MAX, TIMEOUT_INFINITY);
-	if (event_cnt < 0) {
-		LOG_ERROR("Poll failed: ", strerror(errno));
-		return -1;
-	}
-	for (int i = 0; i < event_cnt; ++i) {
-		Conn_t conn((typename Conn_t::Impl_t *)events[i].data.ptr);
-		if (conn == m_Connector.wakeUpConnection_) {
-			uint64_t wake_up;
-			read(conn.get_tnt_strm().get_fd(), &wake_up, sizeof(uint64_t));
-			return 0;
-		}
-		if ((events[i].events & EPOLLIN) != 0) {
-			LOG_DEBUG("Tnt->Client: EPOLLIN - socket ",
-				  conn.get_tnt_strm().get_fd(),
-				  " is ready to read");
-
-			int rc = recvFromTnt(conn);
-			if (rc < 0) {
-				close(conn);
-				return -1;
-			}
-			sendToClient(conn);
-		}
-	}
-	return 0;
-}
-
-template<class BUFFER, class Stream>
-int
+void
 ProxyEpollNetProvider<BUFFER, Stream>::Wait()
 {
 	struct epoll_event events[EPOLL_EVENTS_MAX];
 	int event_cnt = epoll_wait(m_AllEpollFd, events, EPOLL_EVENTS_MAX, TIMEOUT_INFINITY);
 	if (event_cnt < 0) {
 		LOG_ERROR("Poll failed: ", strerror(errno));
-		return -1;
+		std::abort();
 	}
 	for (int i = 0; i < event_cnt; ++i) {
-		int current_fd = events[i].data.fd;
-		if (current_fd == server_fd_) {
-            sockaddr_in client_addr;
-            socklen_t client_len = sizeof(client_addr);
-            int client_fd = accept(server_fd_, 
-                                 reinterpret_cast<sockaddr*>(&client_addr),
-                                 &client_len);
-            if (client_fd == -1) {
-				LOG_ERROR("Accept failed", strerror(errno));
-				// stop();
-				// return;
-            }
-			conns_.emplace_back(ProxyConnection<BUFFER, ProxyEpollNetProvider>(m_Connector));
-			conns_.back().get_client_strm().set_fd(client_fd);
-			addToEpoll(conns_.back(), client_fd);
+		Stream_t *current_strm = (Stream_t *)events[i].data.ptr;
+		if (current_strm->get_fd() == server_strm_.get_fd()) {
+			AcceptNewClient();
 		} else {
-			Conn_t conn((typename Conn_t::Impl_t *)events[i].data.ptr);
+			Conn_t *conn = strm_to_conn[current_strm];
 			if ((events[i].events & EPOLLIN) != 0) {
-				if (current_fd == conn.getImpl().get_client_strm()) {
-					// Client Request
-					int rc = recvFromClient(conn);
-					if (rc < 0) {
-						close(conn);
-						return -1;
+				int rc = recv(*conn, *current_strm);
+				if (rc < 0) {
+					close(*conn);
+					return;
 				}
-				} else {
-					// External service (e.g Tarantool) response
-					int rc = recvFromTnt(conn);
-					if (rc < 0) {
-						close(conn);
-						return -1;
-					}
-				}
-				// send bytes to Callback
 
-				sendToClient(conn);
+
+				m_Connector.setCurrentReceiver(conn, current_strm);
+				// send bytes to Callback
+				m_Connector.customHandler();
+				
+				auto it = new_clients.find(current_strm->get_fd());
+				if (it != new_clients.end()) {
+					new_clients.erase(current_strm->get_fd());
+				}
 			}
 		}
 	}
-	return 0;
 }

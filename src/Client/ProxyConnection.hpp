@@ -30,7 +30,8 @@
  * SUCH DAMAGE.
  */
 
-#include "RequestDecoder.hpp"
+#include "MessageDecoder.hpp"
+#include "RequestEncoder.hpp"
 
 #include "Stream.hpp"
 #include "../Utils/Logger.hpp"
@@ -38,9 +39,6 @@
 #include <sys/uio.h> //iovec
 #include <string>
 #include <unordered_map> //futures
-
-/** rid == request id */
-typedef size_t rid_t;
 
 static constexpr size_t CONN_READAHEAD = 64 * 1024;
 static constexpr size_t IOVEC_MAX_SIZE = 32;
@@ -80,14 +78,15 @@ public:
 	void unref();
 
 	ProxyConnector<BUFFER, NetProvider> &connector;
-	BUFFER clientToTntBuf;
-	BUFFER tntToClientBuf;
-	RequestDecoder<BUFFER> dec;
+	BUFFER decBuffer;
+	BUFFER encBuffer;
+	MessageDecoder<BUFFER> dec;
+	RequestEncoder<BUFFER> enc;
 	/* Iterator separating decoded and raw data in input buffer. */
 	iterator endDecoded;
 	/* Network layer of the connection. */
 	typename NetProvider::Stream_t client_strm;
-    typename NetProvider::Stream_t tnt_strm;
+	std::map<int, typename NetProvider::Stream_t> instance_index_to_strm;
     //Several connection wrappers may point to the same implementation.
 	//It is useful to store connection objects in stl containers for example.
 	ssize_t refs;
@@ -97,8 +96,8 @@ public:
 
 template<class BUFFER, class NetProvider>
 ProxyConnectionImpl<BUFFER, NetProvider>::ProxyConnectionImpl(ProxyConnector<BUFFER, NetProvider> &conn) :
-	connector(conn), clientToTntBuf(), tntToClientBuf(),
-    dec(clientToTntBuf), endDecoded(clientToTntBuf.begin())
+	connector(conn), decBuffer(), encBuffer(),
+    dec(decBuffer), enc(encBuffer), endDecoded(decBuffer.begin())
 {
 }
 
@@ -137,10 +136,30 @@ public:
 	const Impl_t *getImpl() const { return impl; }
 
 	typename NetProvider::Stream_t &get_client_strm() { return impl->client_strm; }
-    typename NetProvider::Stream_t &get_tnt_strm() { return impl->tnt_strm; }
+	std::map<int, typename NetProvider::Stream_t> &get_external_strms() { return impl->instance_index_to_strm; }
+	bool is_connected_to_instance(int index) {
+		auto it = impl->instance_index_to_strm.find(index);
+		if (it == impl->instance_index_to_strm.end()) {
+			return false;
+		}
+		return true;
+	}
+	std::optional<typename NetProvider::Stream_t&> get_instance_strm(int index) {
+		auto it = impl->instance_index_to_strm.find(index);
+		if (it == impl->instance_index_to_strm.end()) {
+			return std::nullopt;
+		}
+		return impl->instance_index_to_strm[index];
+	}
+	std::vector<int> get_connected_instances() {
+		std::vector<int> indexes;
+		for (auto it = impl->instance_index_to_strm.begin(); it != impl->instance_index_to_strm.end(); ++it) {
+			indexes.push_back(it->first);
+		}
+		return indexes;
+	}
 
     const typename NetProvider::Stream_t &get_client_strm() const { return impl->client_strm; }
-	const typename NetProvider::Stream_t &get_tnt_strm() const { return impl->tnt_strm; }
 
 	//Required for storing Connections in hash tables (std::unordered_map)
 	friend bool operator == (const ProxyConnection<BUFFER, NetProvider>& lhs,
@@ -162,45 +181,37 @@ public:
 	ConnectionError& getError();
 	void reset();
 
-	BUFFER& getClientToTntBuf();
-	BUFFER& getTntToClientBuf();
+	BUFFER& getDecBuf();
+	BUFFER& getEncBuf();
 
 	template<class B, class N>
 	friend
-	void clientHasSentBytes(ProxyConnection<B, N> &conn, size_t bytes);
-
-    template<class B, class N>
-	friend
-	void tntHasSentBytes(ProxyConnection<B, N> &conn, size_t bytes);
+	void hasSentDecodedData(ProxyConnection<B, N> &conn, size_t bytes);
 
 	template<class B, class N>
 	friend
-	void clientHasNotRecvBytes(ProxyConnection<B, N> &conn, size_t bytes);
-
-    template<class B, class N>
-	friend
-	void tntHasNotRecvBytes(ProxyConnection<B, N> &conn, size_t bytes);
+	void hasSentEncodedData(ProxyConnection<B, N> &conn, size_t bytes);
 
 	template<class B, class N>
 	friend
-	bool clientHasDataToSend(ProxyConnection<B, N> &conn);
-
-    template<class B, class N>
-	friend
-    bool tntHasDataToSend(ProxyConnection<B, N> &conn);
+	void hasNotRecvBytes(ProxyConnection<B, N> &conn, size_t bytes);
 
 	template<class B, class N>
 	friend
-	bool clientHasDataToDecode(ProxyConnection<B, N> &conn);
+	bool hasDecodedDataToSend(ProxyConnection<B, N> &conn);
 
 	template<class B, class N>
 	friend
-	enum DecodeStatus processRequest(ProxyConnection<B, N> &conn,
-					  Request<B> *result);
+	bool hasEncodedDataToSend(ProxyConnection<B, N> &conn);
 
-    template<class B, class N>
+	template<class B, class N>
 	friend
-	int connectionDecodeRequests(ProxyConnection<B, N> &conn);
+	bool hasDataToDecode(ProxyConnection<B, N> &conn);
+
+	template<class B, class N>
+	friend
+	enum DecodeStatus processMessage(ProxyConnection<B, N> &conn,
+					  Message<B> *result);
 
 private:
 	ProxyConnectionImpl<BUFFER, NetProvider> *impl;
@@ -277,132 +288,100 @@ ProxyConnection<BUFFER, NetProvider>::reset()
 
 template<class BUFFER, class NetProvider>
 BUFFER&
-ProxyConnection<BUFFER, NetProvider>::getClientToTntBuf()
+ProxyConnection<BUFFER, NetProvider>::getDecBuf()
 {
-	return impl->clientToTntBuf;
+	return impl->decBuffer;
 }
 
 template<class BUFFER, class NetProvider>
 BUFFER&
-ProxyConnection<BUFFER, NetProvider>::getTntToClientBuf()
+ProxyConnection<BUFFER, NetProvider>::getEncBuf()
 {
-	return impl->tntToClientBuf;
+	return impl->encBuffer;
 }
 
 template<class BUFFER, class NetProvider>
 void
-clientHasSentBytes(ProxyConnection<BUFFER, NetProvider> &conn, size_t bytes)
+hasSentDecodedData(ProxyConnection<BUFFER, NetProvider> &conn, size_t bytes)
 {
 	//dropBack()/dropFront() interfaces require number of bytes be greater
 	//than zero so let's check it first.
 	if (bytes > 0) {
-		conn.impl->clientToTntBuf.dropFront(bytes);
+		conn.impl->decBuffer.dropFront(bytes);
     }
 }
 
 template<class BUFFER, class NetProvider>
 void
-tntHasSentBytes(ProxyConnection<BUFFER, NetProvider> &conn, size_t bytes)
+hasSentEncodedData(ProxyConnection<BUFFER, NetProvider> &conn, size_t bytes)
 {
 	//dropBack()/dropFront() interfaces require number of bytes be greater
 	//than zero so let's check it first.
 	if (bytes > 0) {
-		conn.impl->tntToClientBuf.dropFront(bytes);
+		conn.impl->encBuffer.dropFront(bytes);
     }
 }
 
 template<class BUFFER, class NetProvider>
 void
-clientHasNotRecvBytes(ProxyConnection<BUFFER, NetProvider> &conn, size_t bytes)
+hasNotRecvBytes(ProxyConnection<BUFFER, NetProvider> &conn, size_t bytes)
 {
-	if (bytes > 0) {
-        conn.impl->clientToTntBuf.dropBack(bytes);
-    }
-}
-
-template<class BUFFER, class NetProvider>
-void
-tntHasNotRecvBytes(ProxyConnection<BUFFER, NetProvider> &conn, size_t bytes)
-{
-	if (bytes > 0) {
-		conn.impl->tntToClientBuf.dropBack(bytes);
-    }
+	conn.impl->decBuffer.dropBack(bytes);
 }
 
 template<class BUFFER, class NetProvider>
 bool
-clientHasDataToSend(ProxyConnection<BUFFER, NetProvider> &conn)
+hasDecodedDataToSend(ProxyConnection<BUFFER, NetProvider> &conn)
 {
-	return !conn.impl->clientToTntBuf.empty();
+	return !conn.impl->decBuffer.empty();
 }
 
 template<class BUFFER, class NetProvider>
 bool
-tntHasDataToSend(ProxyConnection<BUFFER, NetProvider> &conn)
+hasEncodedDataToSend(ProxyConnection<BUFFER, NetProvider> &conn)
 {
-	return !conn.impl->tntToClientBuf.empty();
+	return !conn.impl->encBuffer.empty();
 }
 
 template<class BUFFER, class NetProvider>
 bool
-clientHasDataToDecode(ProxyConnection<BUFFER, NetProvider> &conn)
+hasDataToDecode(ProxyConnection<BUFFER, NetProvider> &conn)
 {
-	assert(conn.impl->endDecoded < conn.impl->clientToTntBuf.end() ||
-	       conn.impl->endDecoded == conn.impl->clientToTntBuf.end());
-	return conn.impl->endDecoded != conn.impl->clientToTntBuf.end();
+	assert(conn.impl->endDecoded < conn.impl->decBuffer.end() ||
+	       conn.impl->endDecoded == conn.impl->decBuffer.end());
+	return conn.impl->endDecoded != conn.impl->decBuffer.end();
 }
 
 template<class BUFFER, class NetProvider>
 DecodeStatus
-processRequest(ProxyConnection<BUFFER, NetProvider> &conn,
-		Request<BUFFER> *result)
+processMessage(ProxyConnection<BUFFER, NetProvider> &conn,
+		Message<BUFFER> *result)
 {
-	if (! conn.impl->clientToTntBuf.has(conn.impl->endDecoded, MP_REQUEST_SIZE)) {
+	if (! conn.impl->decBuffer.has(conn.impl->endDecoded, MP_RESPONSE_SIZE)) {
 		return DECODE_NEEDMORE;
     }
 
-	Request<BUFFER> request;
-	request.size = conn.impl->dec.decodeRequestSize();
-	if (request.size < 0) {
-		LOG_ERROR("Failed to decode request size");
+	Message<BUFFER> message;
+	message.size = conn.impl->dec.decodeMessageSize();
+	if (message.size < 0) {
+		LOG_ERROR("Failed to decode message size");
         return DECODE_ERR;
 	}
-	request.size += MP_REQUEST_SIZE;
-	if (! conn.impl->clientToTntBuf.has(conn.impl->endDecoded, request.size)) {
+	message.size += MP_RESPONSE_SIZE;
+	if (! conn.impl->decBuffer.has(conn.impl->endDecoded, message.size)) {
         conn.impl->dec.reset(conn.impl->endDecoded);
 		return DECODE_NEEDMORE;
 	}
-	if (conn.impl->dec.decodeRequest(request) != 0) {
-		LOG_ERROR("Failed to decode request");
+	if (conn.impl->dec.decodeMessage(message) != 0) {
+		LOG_ERROR("Failed to decode message");
+		conn.impl->endDecoded += message.size;
 		return DECODE_ERR;
 	}
 
-    *result = std::move(request);
+    *result = std::move(message);
 
-    conn.impl->endDecoded += request.size;
+    conn.impl->endDecoded += message.size;
     conn.impl->dec.reset(conn.impl->endDecoded);
 
 	return DECODE_SUCC;
 }
-
-template<class BUFFER, class NetProvider>
-int
-connectionDecodeRequests(ProxyConnection<BUFFER, NetProvider> &conn)
-{
-	while (clientHasDataToDecode(conn)) {
-        Request<BUFFER> request;
-		DecodeStatus rc = processRequest(conn, &request);
-		if (rc == DECODE_ERR)
-			return -1;
-
-		if (rc == DECODE_NEEDMORE)
-			return 0;
-		assert(rc == DECODE_SUCC);
-
-        // logic
-		conn.impl->connector.processRequest(std::move(request));
-
-	}
-	return 0;
-}
-

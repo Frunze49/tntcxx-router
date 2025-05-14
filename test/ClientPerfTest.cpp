@@ -243,7 +243,7 @@ getServerRps(Connector<BUFFER, NetProvider> &client,
 		std::cerr << "Failed to retrieve rps from server!" << std::endl;
 		abort();
 	}
-	Response<BUFFER> response = conn.getResponse(f);
+	Message<BUFFER> response = conn.getResponse(f);
 	if (response.body.data == std::nullopt) {
 		std::cerr << "Failed to retrieve rps from server: error is returned" << std::endl;
 		abort();

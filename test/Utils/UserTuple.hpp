@@ -30,7 +30,7 @@
  * SUCH DAMAGE.
  */
 #include "../src/Buffer/Buffer.hpp"
-#include "../src/Client/ResponseDecoder.hpp"
+#include "../src/Client/MessageDecoder.hpp"
 #include "../src/mpp/mpp.hpp"
 
 /** Corresponds to data stored in _space[512]. */

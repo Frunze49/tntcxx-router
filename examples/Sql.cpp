@@ -62,7 +62,7 @@ decodeUserTuple(Data<BUFFER> &data)
 
 template<class BUFFER>
 void
-printResponse(Response<BUFFER> &response)
+printResponse(Message<BUFFER> &response)
 {
 	std::cout << ">>> RESPONSE {" << std::endl;
 	if (response.body.error_stack != std::nullopt) {
@@ -205,7 +205,7 @@ main()
 	client.waitAll(conn, futures);
 	for (size_t i = 0; i < futures.size(); ++i) {
 		assert(conn.futureIsReady(futures[i]));
-		Response<Buf_t> response = conn.getResponse(futures[i]);
+		Message<Buf_t> response = conn.getResponse(futures[i]);
 		printResponse<Buf_t>(response);
 	}
 
@@ -213,7 +213,7 @@ main()
 	rid_t prepare_stmt = conn.prepare(select_stmt);
 	client.wait(conn, prepare_stmt);
 	assert(conn.futureIsReady(prepare_stmt));
-	Response<Buf_t> response = conn.getResponse(prepare_stmt);
+	Message<Buf_t> response = conn.getResponse(prepare_stmt);
 	printResponse<Buf_t>(response);
 	assert(response.body.stmt_id.has_value());
 	uint32_t stmt_id = *response.body.stmt_id;
@@ -226,7 +226,7 @@ main()
 	client.waitAll(conn, prepared_select_futures);
 	for (size_t i = 0; i < prepared_select_futures.size(); ++i) {
 		assert(conn.futureIsReady(prepared_select_futures[i]));
-		Response<Buf_t> response =
+		Message<Buf_t> response =
 			conn.getResponse(prepared_select_futures[i]);
 		printResponse<Buf_t>(response);
 	}

@@ -34,7 +34,7 @@
 #include <map>
 
 #include "IprotoConstants.hpp"
-#include "ResponseReader.hpp"
+#include "MessageReader.hpp"
 #include "Scramble.hpp"
 #include "../mpp/mpp.hpp"
 #include "../Utils/Logger.hpp"
@@ -95,12 +95,17 @@ public:
 			  const Greeting &greet);
 	void reencodeAuth(std::string_view user, std::string_view passwd,
 			  const Greeting &greet);
+	
+	size_t encodeOk(int sync, int schema_id);
+	template <class T>
+	size_t encodeOk(int sync, int schema_id, const T *data = nullptr);
 
 	/** Sync value is used as request id. */
 	static size_t getSync() { return sync; }
 	static constexpr size_t PREHEADER_SIZE = 5;
 private:
 	void encodeHeader(int request);
+	void encodeResponseHeader(int request, int current_sync, int schema_id);
 	BUFFER &m_Buf;
 	inline static ssize_t sync = 0;
 };
@@ -111,8 +116,18 @@ RequestEncoder<BUFFER>::encodeHeader(int request)
 {
 	//TODO: add schema version.
 	mpp::encode(m_Buf, mpp::as_map(std::forward_as_tuple(
-		MPP_AS_CONST(Iproto::SYNC), ++RequestEncoder::sync,
-		MPP_AS_CONST(Iproto::REQUEST_TYPE), request)));
+			MPP_AS_CONST(Iproto::SYNC), ++RequestEncoder::sync,
+			MPP_AS_CONST(Iproto::REQUEST_TYPE), request)));
+}
+
+template<class BUFFER>
+void
+RequestEncoder<BUFFER>::encodeResponseHeader(int request, int current_sync, int schema_id)
+{
+	mpp::encode(m_Buf, mpp::as_map(std::forward_as_tuple(
+		MPP_AS_CONST(Iproto::SYNC), current_sync,
+		MPP_AS_CONST(Iproto::REQUEST_TYPE), request,
+		MPP_AS_CONST(Iproto::SCHEMA_VERSION), schema_id)));
 }
 
 template<class BUFFER>
@@ -364,4 +379,38 @@ RequestEncoder<BUFFER>::reencodeAuth(std::string_view user,
 		MPP_AS_CONST(Iproto::USER_NAME), user,
 		MPP_AS_CONST(Iproto::TUPLE),
 		std::make_tuple("chap-sha1", scram_str))));
+}
+
+template<class BUFFER>
+template<class T>
+size_t
+RequestEncoder<BUFFER>::encodeOk(int sync, int schema_id, const T *data)
+{
+	iterator_t<BUFFER> request_start = m_Buf.end();
+	m_Buf.write('\xce');
+	m_Buf.write(uint32_t{0});
+	encodeResponseHeader(Iproto::OK, sync, schema_id);
+	mpp::encode(m_Buf, mpp::as_map(std::forward_as_tuple(
+		MPP_AS_CONST(Iproto::DATA), *data)));
+
+	uint32_t request_size = (m_Buf.end() - request_start) - PREHEADER_SIZE;
+	++request_start;
+	request_start.set(__builtin_bswap32(request_size));
+	return request_size + PREHEADER_SIZE;
+}
+
+template<class BUFFER>
+size_t
+RequestEncoder<BUFFER>::encodeOk(int sync, int schema_id)
+{
+	iterator_t<BUFFER> request_start = m_Buf.end();
+	m_Buf.write('\xce');
+	m_Buf.write(uint32_t{0});
+	encodeResponseHeader(Iproto::OK, sync, schema_id);
+	mpp::encode(m_Buf, mpp::as_map(std::make_tuple()));
+
+	uint32_t request_size = (m_Buf.end() - request_start) - PREHEADER_SIZE;
+	++request_start;
+	request_start.set(__builtin_bswap32(request_size));
+	return request_size + PREHEADER_SIZE;
 }

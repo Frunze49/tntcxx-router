@@ -48,8 +48,8 @@
 
 //doclabel05-1
 const char *address = "127.0.0.1";
-int port = 3302;
-int WAIT_TIMEOUT = 1000; //milliseconds
+int port = 3304;
+int WAIT_TIMEOUT = 1000000; //milliseconds
 //doclabel05-2
 
 //doclabel02-1
@@ -75,7 +75,7 @@ decodeUserTuple(Data<BUFFER> &data)
 
 template<class BUFFER>
 void
-printResponse(Response<BUFFER> &response)
+printResponse(Message<BUFFER> &response)
 {
 	if (response.body.error_stack != std::nullopt) {
 		Error err = (*response.body.error_stack)[0];
@@ -183,7 +183,7 @@ main()
 	//doclabel10-2
 	/* Now let's get response using our future.*/
 	//doclabel11-1
-	std::optional<Response<Buf_t>> response = conn.getResponse(ping);
+	std::optional<Message<Buf_t>> response = conn.getResponse(ping);
 	/*
 	 * Since conn.futureIsReady(ping) returned <true>, then response
 	 * must be ready.
@@ -196,7 +196,7 @@ main()
 	 * responses for pings contain nothing - empty map).
 	 * To tell responses containing data from error responses, one can
 	 * rely on response code storing in the header or check
-	 * Response->body.data and Response->body.error_stack members.
+	 * Message->body.data and Message->body.error_stack members.
 	 */
 	printResponse<Buf_t>(*response);
 	//doclabel11-2

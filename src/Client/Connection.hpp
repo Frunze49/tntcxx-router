@@ -31,7 +31,7 @@
  */
 
 #include "RequestEncoder.hpp"
-#include "ResponseDecoder.hpp"
+#include "MessageDecoder.hpp"
 #include "Stream.hpp"
 #include "../Utils/Logger.hpp"
 
@@ -83,7 +83,7 @@ public:
 	BUFFER inBuf;
 	BUFFER outBuf;
 	RequestEncoder<BUFFER> enc;
-	ResponseDecoder<BUFFER> dec;
+	MessageDecoder<BUFFER> dec;
 	/* Iterator separating decoded and raw data in input buffer. */
 	iterator endDecoded;
 	/* Network layer of the connection. */
@@ -96,7 +96,7 @@ public:
 	Greeting greeting;
 	bool is_greeting_received;
 	bool is_auth_required;
-	std::unordered_map<rid_t, Response<BUFFER>> futures;
+	std::unordered_map<rid_t, Message<BUFFER>> futures;
 };
 
 template<class BUFFER, class NetProvider>
@@ -169,7 +169,7 @@ public:
 		return lhs.get_strm().get_fd() < rhs.get_strm().get_fd();
 	}
 
-	Response<BUFFER> getResponse(rid_t future);
+	Message<BUFFER> getResponse(rid_t future);
 	bool futureIsReady(rid_t future);
 	void flush();
 	size_t getFutureCount() const;
@@ -231,7 +231,7 @@ public:
 	template<class B, class N>
 	friend
 	enum DecodeStatus processResponse(Connection<B, N> &conn,
-					  Response<B> *result);
+					  Message<B> *result);
 
 	template<class B, class N>
 	friend
@@ -401,7 +401,7 @@ Connection<BUFFER, NetProvider>::~Connection()
 }
 
 template<class BUFFER, class NetProvider>
-Response<BUFFER>
+Message<BUFFER>
 Connection<BUFFER, NetProvider>::getResponse(rid_t future)
 {
 	//This method does not tolerate extracting wrong future.
@@ -412,7 +412,7 @@ Connection<BUFFER, NetProvider>::getResponse(rid_t future)
 	if (entry == impl->futures.end())
 		std::abort();
 #endif
-	Response<BUFFER> response = std::move(entry->second);
+	Message<BUFFER> response = std::move(entry->second);
 	impl->futures.erase(future);
 	return response;
 }
@@ -531,15 +531,15 @@ inputBufGC(Connection<BUFFER, NetProvider> &conn)
 template<class BUFFER, class NetProvider>
 DecodeStatus
 processResponse(Connection<BUFFER, NetProvider> &conn,
-		Response<BUFFER> *result)
+		Message<BUFFER> *result)
 {
 	//Decode response. In case of success - fill in feature map
 	//and adjust end-of-decoded data pointer. Call GC if needed.
 	if (! conn.impl->inBuf.has(conn.impl->endDecoded, MP_RESPONSE_SIZE))
 		return DECODE_NEEDMORE;
 
-	Response<BUFFER> response;
-	response.size = conn.impl->dec.decodeResponseSize();
+	Message<BUFFER> response;
+	response.size = conn.impl->dec.decodeMessageSize();
 	if (response.size < 0) {
 		LOG_ERROR("Failed to decode response size");
 		//In case of corrupted response size all other data in the buffer
@@ -551,18 +551,18 @@ processResponse(Connection<BUFFER, NetProvider> &conn,
 	}
 	response.size += MP_RESPONSE_SIZE;
 	if (! conn.impl->inBuf.has(conn.impl->endDecoded, response.size)) {
-		//Response was received only partially. Reset decoder position
+		//Message was received only partially. Reset decoder position
 		//to the start of response to make this function re-entered.
 		conn.impl->dec.reset(conn.impl->endDecoded);
 		return DECODE_NEEDMORE;
 	}
-	if (conn.impl->dec.decodeResponse(response) != 0) {
+	if (conn.impl->dec.decodeMessage(response) != 0) {
 		conn.setError("Failed to decode response, skipping bytes..");
 		conn.impl->endDecoded += response.size;
 		return DECODE_ERR;
 	}
 	LOG_DEBUG("Header: sync=", response.header.sync, ", code=",
-		  response.header.code, ", schema=", response.header.schema_id);
+		  response.header.code, ", schema=", response.header.schema_id.value());
 	if (result != nullptr) {
 		*result = std::move(response);
 	} else {

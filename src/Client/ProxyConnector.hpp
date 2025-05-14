@@ -29,9 +29,6 @@
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-#include <thread>
-#include <atomic>
-#include <mutex>
 #include <list>
 
 #include "ProxyConnection.hpp"
@@ -69,10 +66,7 @@ template<class BUFFER, class NetProvider = DefaultNetProvider<BUFFER>>
 class ProxyConnector
 {
 public:
-	using RequestHandler = std::function<void(Request<BUFFER>)>;
-
-	ProxyConnector(const ConnectOptions& opts, const std::string &listen_addr, uint16_t &listen_port,
-				   RequestHandler request_handler);
+	ProxyConnector(const std::vector<ConnectOptions>& opts, const std::string &listen_addr, uint16_t &listen_port);
 	~ProxyConnector();
 	ProxyConnector(const ProxyConnector& connector) = delete;
 	ProxyConnector& operator = (const ProxyConnector& connector) = delete;
@@ -81,60 +75,59 @@ public:
      * Start the proxy server.
      * Returns 0 on success, -1 on error.
      */
-    int start();
-    
-    /**
-     * Stop the proxy server and close all connections.
-     */
-    void stop();
-	void deleteOneConnection(bool isClientToTnt);
-	void connect(ProxyConnection<BUFFER, NetProvider> &conn,
-		    const ConnectOptions &opts, int client_fd);
+    void start();
 	void acceptConnections();
 
-	void waitFromClient();
-	void waitFromTnt();
+	void customHandler();
+	void setCurrentReceiver(ProxyConnection<BUFFER, NetProvider> *conn, typename NetProvider::Stream_t *recv_strm);
 
-	void processRequest(Request<BUFFER>&& request);
+	std::optional<Message<BUFFER>>
+		getNextDecodedMessage();
 
-	ProxyConnection<BUFFER, NetProvider> wakeUpConnection_;
-	std::list<ProxyConnection<BUFFER, NetProvider>> conns_;
+	typename NetProvider::Stream_t& connect(int instance_index);
+	int sendDecodedToStream(typename NetProvider::Stream_t &strm, int size);
+	int sendDecodedToClient(int size);
+	void skipLastDecodedMessage(int size);
+
+	int sendEncodedToStream(typename NetProvider::Stream_t &strm, int size);
+	int sendEncodedToClient(int size);
+	void skipLastEncodedMessage(int size);
+
+	bool isClientFirstRequest();
+	bool isConnectedToInstance(int intance_id);
+	std::vector<int> getConnectedInstances();
+	bool isRecvFromClient();
+	bool isGreetingExpected();
+	int deliverDecodedGreeting();
+
+	int getInstanceConnectionAmount(int instance_id);
+
+	template <size_t N>
+	int deliverEncodedGreeting(char (&buf)[N]);
+
+	int createMessage(int sync, int schema_id);
+	template <class T>
+	int createMessage(int sync, int schema_id, const T *data = nullptr);
+	
+	std::vector<ConnectOptions> opts_;
 
 private:
-	
-	int server_fd_;
-	
-	std::atomic<int> open_connections_{0};
-	std::atomic<bool> running_{false};
-	std::atomic<bool> waiting_{false};
-
-	std::atomic<bool> new_client_{true};
-	std::atomic<bool> new_tnt_{true};
-
-	std::mutex mtx_;
-	std::thread acceptor_thread_, client_thread_, tnt_thread_;	
-
 	NetProvider m_NetProvider_;
+	ProxyConnection<BUFFER, NetProvider> *current_conn;
+	typename NetProvider::Stream_t *current_strm;
 
-	ConnectOptions opts_;
 	std::string listen_addr_;
 	uint16_t listen_port_;
-
-	RequestHandler request_handler_;
-
 	static constexpr int MAX_OPEN_CONNECTIONS = 128;
 };
 
 template<class BUFFER, class NetProvider>
-ProxyConnector<BUFFER, NetProvider>::ProxyConnector(const ConnectOptions& opts,
+ProxyConnector<BUFFER, NetProvider>::ProxyConnector(const std::vector<ConnectOptions>& opts,
 												    const std::string &listen_addr,
-													uint16_t &listen_port,
-													RequestHandler request_handler) :
-										wakeUpConnection_(*this), m_NetProvider_(*this),
-										opts_(opts), listen_addr_(listen_addr), listen_port_(listen_port),
-										request_handler_(std::move(request_handler))
+													uint16_t &listen_port) :
+										opts_(opts), m_NetProvider_(*this), 
+								 		listen_addr_(listen_addr), listen_port_(listen_port)
 {
-	(void)wakeUpConnection_;
 }
 
 template<class BUFFER, class NetProvider>
@@ -143,24 +136,18 @@ ProxyConnector<BUFFER, NetProvider>::~ProxyConnector()
 }
 
 template<class BUFFER, class NetProvider>
-int ProxyConnector<BUFFER, NetProvider>::start()
+void ProxyConnector<BUFFER, NetProvider>::start()
 {
-    if (running_) {
-		LOG_ERROR("Proxy is already running");
-        return 1;
-    }
-
-    server_fd_ = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_fd_ < 0) {
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_fd < 0) {
 		LOG_ERROR("Socket creation failed", strerror(errno));
-        return 1;
+        return;
     }
 
     int opt = 1;
-    if (setsockopt(server_fd_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
-        stop();
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
 		LOG_ERROR("Setsockopt failed", strerror(errno));
-        return 1;
+        return;
     }
 
     struct sockaddr_in addr;
@@ -169,143 +156,185 @@ int ProxyConnector<BUFFER, NetProvider>::start()
     addr.sin_addr.s_addr = inet_addr(listen_addr_.c_str());
     addr.sin_port = htons(listen_port_);
 
-    if (bind(server_fd_, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) < 0) {
-        stop();
+    if (bind(server_fd, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) < 0) {
 		LOG_ERROR("Bind failed", strerror(errno));
-        return 1;
+        return;
     }
 
-    if (listen(server_fd_, 128) < 0) {
-        stop();
+    if (listen(server_fd, 128) < 0) {
 		LOG_ERROR("Listen failed", strerror(errno));
-        return 1;
+        return;
     }
-
-    running_ = true;
-    acceptor_thread_ = std::thread(&ProxyConnector::acceptConnections, this);
-	acceptor_thread_.detach();
-
-    return 0;
-}
-
-template<class BUFFER, class NetProvider>
-void ProxyConnector<BUFFER, NetProvider>::stop()
-{
-	std::lock_guard<std::mutex> lock(mtx_);
-    if (!running_) return;
-
-    running_ = false;
-	waiting_ = false;
-	open_connections_ = 0;
-
-	m_NetProvider_.close(wakeUpConnection_);
-	close(server_fd_);
-}
-
-template<class BUFFER, class NetProvider>
-void ProxyConnector<BUFFER, NetProvider>::deleteOneConnection(bool isClientToTnt)
-{
-	std::lock_guard<std::mutex> lock(mtx_);
-	if (open_connections_ < 1) return;
-
-	--open_connections_;
-	if (open_connections_ == 0) {
-		LOG_INFO("Stop polling threads");
-		waiting_ = false;
-		
-		uint64_t wake_up = 1;
-		if (isClientToTnt) {
-			write(wakeUpConnection_.get_tnt_strm().get_fd(), &wake_up, sizeof(uint64_t));
-		} else {
-			write(wakeUpConnection_.get_client_strm().get_fd(), &wake_up, sizeof(uint64_t));
-		}
-	}
-}
-
-template<class BUFFER, class NetProvider>
-void
-ProxyConnector<BUFFER, NetProvider>::connect(ProxyConnection<BUFFER, NetProvider> &conn,
-					const ConnectOptions &opts, int client_fd)
-{
-	//Make sure that connection is not yet established.
-	assert(conn.get_client_strm().has_status(SS_DEAD));
-	assert(conn.get_tnt_strm().has_status(SS_DEAD));
-	if (m_NetProvider_.connect(conn, opts, client_fd) != 0) {
-		LOG_ERROR("Failed to connect to ",
-			  opts.address, ':', opts.service);
-		std::abort();
-	}
-
-	{
-		std::lock_guard<std::mutex> lock(mtx_);
-		open_connections_++;
-		waiting_ = true;
-		assert(open_connections_ < MAX_OPEN_CONNECTIONS);
-	}
-
-	LOG_DEBUG("Connection to ", opts.address, ':', opts.service,
-		  " has been established");
+	m_NetProvider_.SetServerFd(server_fd);
+    acceptConnections();
 }
 
 template<class BUFFER, class NetProvider>
 void ProxyConnector<BUFFER, NetProvider>::acceptConnections()
 {
-    while (running_) {
-        struct sockaddr_in client_addr;
-        socklen_t client_len = sizeof(client_addr);
-        
-        int client_fd = accept(server_fd_, 
-                             reinterpret_cast<sockaddr*>(&client_addr),
-                             &client_len);
-        if (client_fd < 0) {
-			LOG_ERROR("Accept failed", strerror(errno));
-            stop();
-			return;
-        }
-		conns_.emplace_back(ProxyConnection<BUFFER, NetProvider>(*this));
-		connect(conns_.back(), opts_, client_fd);
-		
-		assert(new_client_ == new_tnt_);
-		if (new_client_ && new_tnt_) {
-			client_thread_ = std::thread(&ProxyConnector::waitFromClient, this);
-			tnt_thread_ = std::thread(&ProxyConnector::waitFromTnt, this);
-
-			client_thread_.detach();
-			tnt_thread_.detach();
-		}
+	LOG_INFO("Server started on: ", listen_addr_, ":", listen_port_);
+    while (true) {
+		m_NetProvider_.Wait();
     }
 }
 
 template<class BUFFER, class NetProvider>
-void
-ProxyConnector<BUFFER, NetProvider>::waitFromClient()
+void ProxyConnector<BUFFER, NetProvider>::setCurrentReceiver(ProxyConnection<BUFFER, NetProvider> *conn, typename NetProvider::Stream_t *recv_strm)
 {
-	LOG_INFO("Started client receiver");
-	new_client_ = false;
-	while (waiting_)
-	{
-		if (m_NetProvider_.WaitClientToTnt() != 0)
-			deleteOneConnection(true);
+	current_conn = conn;
+	current_strm = recv_strm;
+}
+
+template<class BUFFER, class NetProvider>
+std::optional<Message<BUFFER>>
+ProxyConnector<BUFFER, NetProvider>::getNextDecodedMessage()
+{
+	if (hasDataToDecode(*current_conn)) {
+        Message<BUFFER> message;
+		DecodeStatus rc = processMessage(*current_conn, &message);
+		if (rc == DECODE_ERR)
+			return std::nullopt;
+
+		if (rc == DECODE_NEEDMORE)
+			return std::nullopt;
+		assert(rc == DECODE_SUCC);
+
+		return message;
 	}
-	new_client_ = true;
-	// del conn
+	return std::nullopt;
+}
+
+template<class BUFFER, class NetProvider>
+int
+ProxyConnector<BUFFER, NetProvider>::sendDecodedToStream(typename NetProvider::Stream_t &strm, int size)
+{
+	assert(strm.get_fd() > 0);
+	return m_NetProvider_.sendDec(*current_conn, strm, size);
+}
+
+template<class BUFFER, class NetProvider>
+int
+ProxyConnector<BUFFER, NetProvider>::sendDecodedToClient(int size)
+{
+	return sendDecodedToStream(current_conn->get_client_strm(), size);
 }
 
 template<class BUFFER, class NetProvider>
 void
-ProxyConnector<BUFFER, NetProvider>::waitFromTnt()
+ProxyConnector<BUFFER, NetProvider>::skipLastDecodedMessage(int size)
 {
-	LOG_INFO("Started tarantool receiver");
-	new_tnt_ = false;
-	while (waiting_)
-	{
-		if (m_NetProvider_.WaitTntToClient() != 0)
-			deleteOneConnection(false);
-	}
-	new_tnt_ = true;
+	hasSentEncodedData(*current_conn, size);
 }
+
 template<class BUFFER, class NetProvider>
-void
-ProxyConnector<BUFFER, NetProvider>::processRequest(Request<BUFFER>&& request) {
-	request_handler_(std::move(request));
+int
+ProxyConnector<BUFFER, NetProvider>::sendEncodedToStream(typename NetProvider::Stream_t &strm, int size)
+{
+	assert(strm.get_fd() > 0);
+	return m_NetProvider_.sendEnc(*current_conn, strm, size);
+}
+
+template<class BUFFER, class NetProvider>
+int
+ProxyConnector<BUFFER, NetProvider>::sendEncodedToClient(int size)
+{
+	return sendEncodedToStream(current_conn->get_client_strm(), size);
+}
+
+
+template<class BUFFER, class NetProvider>
+typename NetProvider::Stream_t&
+ProxyConnector<BUFFER, NetProvider>::connect(int instance_index)
+{
+	assert(instance_index >= 0);
+	auto it = current_conn->getImpl()->instance_index_to_strm.find(instance_index);
+	bool is_new_strm = it == current_conn->getImpl()->instance_index_to_strm.end();
+	if (is_new_strm) {
+		auto &strm = m_NetProvider_.connect(*current_conn, instance_index);
+		return strm;
+	}
+	return it->second;
+}
+
+template<class BUFFER, class NetProvider>
+bool
+ProxyConnector<BUFFER, NetProvider>::isRecvFromClient()
+{
+	return current_conn->get_client_strm().get_fd() == current_strm->get_fd();
+}
+
+template<class BUFFER, class NetProvider>
+bool
+ProxyConnector<BUFFER, NetProvider>::isClientFirstRequest()
+{
+	if (current_strm->get_fd() != current_conn->get_client_strm().get_fd()) return false;
+	return m_NetProvider_.new_clients.find(current_strm->get_fd()) != m_NetProvider_.new_clients.end();
+}
+
+template<class BUFFER, class NetProvider>
+bool
+ProxyConnector<BUFFER, NetProvider>::isConnectedToInstance(int instance_id)
+{
+	return current_conn->is_connected_to_instance(instance_id);
+}
+
+template<class BUFFER, class NetProvider>
+std::vector<int>
+ProxyConnector<BUFFER, NetProvider>::getConnectedInstances()
+{
+	return current_conn->get_connected_instances();
+}
+
+template<class BUFFER, class NetProvider>
+bool
+ProxyConnector<BUFFER, NetProvider>::isGreetingExpected()
+{
+	if (isRecvFromClient()) return false;
+
+	auto it = m_NetProvider_.greeting_expected_on_fd.find(current_strm->get_fd());
+	return it != m_NetProvider_.greeting_expected_on_fd.end();
+}
+
+template<class BUFFER, class NetProvider>
+template <size_t N>
+int
+ProxyConnector<BUFFER, NetProvider>::deliverEncodedGreeting(char (&greeting_buf)[N])
+{
+	assert(!hasEncodedDataToSend(*current_conn));
+	current_conn->getImpl()->encBuffer.write(greeting_buf);
+	return m_NetProvider_.sendEnc(*current_conn, current_conn->get_client_strm());
+}
+
+template<class BUFFER, class NetProvider>
+int
+ProxyConnector<BUFFER, NetProvider>::deliverDecodedGreeting()
+{
+	auto it = m_NetProvider_.greeting_expected_on_fd.find(current_strm->get_fd());
+	m_NetProvider_.greeting_expected_on_fd.erase(it);
+
+	current_conn->getImpl()->endDecoded += Iproto::GREETING_SIZE;
+    current_conn->getImpl()->dec.reset(current_conn->getImpl()->endDecoded);
+	return m_NetProvider_.sendDec(*current_conn, current_conn->get_client_strm(), Iproto::GREETING_SIZE);
+}
+
+template<class BUFFER, class NetProvider>
+int
+ProxyConnector<BUFFER, NetProvider>::getInstanceConnectionAmount(int instance_id)
+{
+	return m_NetProvider_.instance_id_to_active_connetions[instance_id];
+}
+
+template<class BUFFER, class NetProvider>
+template <class T>
+int
+ProxyConnector<BUFFER, NetProvider>::createMessage(int sync, int schema_id, const T *data)
+{
+	return current_conn->getImpl()->enc.encodeOk(sync, schema_id, data);
+}
+
+template<class BUFFER, class NetProvider>
+int
+ProxyConnector<BUFFER, NetProvider>::createMessage(int sync, int schema_id)
+{
+	return current_conn->getImpl()->enc.encodeOk(sync, schema_id);
 }

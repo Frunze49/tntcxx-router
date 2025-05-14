@@ -75,7 +75,7 @@ public:
 		    const std::string& addr, unsigned port);
 
 	int wait(Connection<BUFFER, NetProvider> &conn, rid_t future,
-		 int timeout = 0, Response<BUFFER> *result = nullptr);
+		 int timeout = 0, Message<BUFFER> *result = nullptr);
 	int waitAll(Connection<BUFFER, NetProvider> &conn,
 		    const std::vector<rid_t > &futures, int timeout = 0);
 	int waitCount(Connection<BUFFER, NetProvider> &conn,
@@ -158,7 +158,7 @@ Connector<BUFFER, NetProvider>::close(ConnectionImpl<BUFFER, NetProvider> &conn)
 template<class BUFFER, class NetProvider>
 int
 connectionDecodeResponses(Connection<BUFFER, NetProvider> &conn,
-			  Response<BUFFER> *result)
+			  Message<BUFFER> *result)
 {
 	while (hasDataToDecode(conn)) {
 		DecodeStatus rc = processResponse(conn,  result);
@@ -178,7 +178,7 @@ template<class BUFFER, class NetProvider>
 int
 Connector<BUFFER, NetProvider>::wait(Connection<BUFFER, NetProvider> &conn,
 				     rid_t future, int timeout,
-				     Response<BUFFER> *result)
+				     Message<BUFFER> *result)
 {
 	LOG_DEBUG("Waiting for the future ", future, " with timeout ", timeout);
 	Timer timer{timeout};
@@ -234,7 +234,7 @@ Connector<BUFFER, NetProvider>::waitAll(Connection<BUFFER, NetProvider> &conn,
 		}
 		if (hasDataToDecode(conn)) {
 			assert(m_ReadyToDecode.find(conn) != m_ReadyToDecode.end());
-			if (connectionDecodeResponses(conn, static_cast<Response<BUFFER>*>(nullptr)) != 0)
+			if (connectionDecodeResponses(conn, static_cast<Message<BUFFER>*>(nullptr)) != 0)
 				return -1;
 			if (!hasDataToDecode(conn))
 				m_ReadyToDecode.erase(conn);
@@ -272,7 +272,7 @@ Connector<BUFFER, NetProvider>::waitAny(int timeout)
 	}
 	Connection<BUFFER, NetProvider> conn = *m_ReadyToDecode.begin();
 	assert(hasDataToDecode(conn));
-	if (connectionDecodeResponses(conn, static_cast<Response<BUFFER>*>(nullptr)) != 0)
+	if (connectionDecodeResponses(conn, static_cast<Message<BUFFER>*>(nullptr)) != 0)
 		return std::nullopt;
 	if (!hasDataToDecode(conn))
 		m_ReadyToDecode.erase(conn);
@@ -295,7 +295,7 @@ Connector<BUFFER, NetProvider>::waitCount(Connection<BUFFER, NetProvider> &conn,
 		}
 		if (hasDataToDecode(conn)) {
 			assert(m_ReadyToDecode.find(conn) != m_ReadyToDecode.end());
-			if (connectionDecodeResponses(conn, static_cast<Response<BUFFER>*>(nullptr)) != 0)
+			if (connectionDecodeResponses(conn, static_cast<Message<BUFFER>*>(nullptr)) != 0)
 				return -1;
 			if (!hasDataToDecode(conn))
 				m_ReadyToDecode.erase(conn);

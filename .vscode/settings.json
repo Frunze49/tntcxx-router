@@ -75,6 +75,13 @@
         "*.ipp": "cpp",
         "bitset": "cpp",
         "complex": "cpp",
-        "*.inc": "cpp"
+        "*.inc": "cpp",
+        "cassert": "cpp",
+        "cerrno": "cpp",
+        "cfloat": "cpp",
+        "climits": "cpp",
+        "ios": "cpp",
+        "queue": "cpp",
+        "cstdbool": "cpp"
     }
 }

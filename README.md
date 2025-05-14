@@ -191,9 +191,9 @@ only once: `getResponse()` erases request id from internal map once it is
 returned to user.
 
 ```c++
-std::optional<Response<Buf_t>> response = conn.getResponse(ping);
+std::optional<Message<Buf_t>> response = conn.getResponse(ping);
 ```
-Response consists of header and body (`response.header` and `response.body`).
+Message consists of header and body (`response.header` and `response.body`).
 Depending on success of request execution on server side, body may contain
 either runtime error(s) (accessible by `response.body.error_stack`) or data
 (tuples) (`response.body.data`). In turn, data is a vector of tuples. However,

@@ -1,1 +1,0 @@
-/usr/bin/c++ -g CMakeFiles/epoll.dir/epoll.cpp.o -o epoll  libev.a 

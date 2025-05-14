@@ -30,3 +30,14 @@
 # Documentation builds
 doc/locale/en/
 doc/output
+
+# Cmake
+examples/CMakeFiles/
+examples/CMakeCache.txt
+examples/cmake_install.cmake
+examples/Makefile
+examples/proxy
+examples/Sql
+examples/Simple
+examples/balancer
+examples/mock

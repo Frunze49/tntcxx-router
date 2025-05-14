@@ -98,6 +98,9 @@ struct ConnectOptions {
 	/** Time span limit for connection establishment. */
 	size_t connect_timeout = DEFAULT_CONNECT_TIMEOUT;
 
+	/** Connection to tarantool instance */
+	bool is_tnt = true;
+
 	/** Optional login and password. */
 	std::string user{};
 	std::string passwd{};
